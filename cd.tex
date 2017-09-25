@@ -35,58 +35,64 @@
 		intrahash = {87686aa19cf8339d926bafc7860d78b4},
 		keywords = {Contrastive Divergence Learning On},
 		timestamp = {2014-04-08T11:15:45.000+0200},
-		title = {On Contrastive Divergence Learning },
+		title = {On Contrastive Divergence Learning},
 		year = 2005
 	}
 \end{filecontents}
 
 \begin{document}
 \begin{center}
-	{\huge On Contrastive Divergence} 
+{\huge On Contrastive Divergence} 
 \end{center}
 
 Contrastive Divergence (CD) is an approximative Maximum Likelihood (ML) learning algorithm proposed by Geoffrey Hinton \cite{Hinton:2002, carreiraperpinan:2005}.
+
+% ToDO:
+% Cleanup notation, e.g. average / expectation.
+% Rewrite with gibbs dist and modified energy function p_\theta(x) = \frac{1}{Z(\theta)}\exp\[\mathcal{E}_\theta(x)\]
+% Relation to KL
+% Origin of name CD
 
 \section{Why CD?}
 
 We would like to model the probability of a data point $x$ using a function of the form $f_\theta(x)$ where $\theta$ denotes a vector of model parameters. As we know, the probability of $x$, $p_\theta(x)$ must integrate to $1$ over all $x$, therefore:
 
 \begin{equation}
-	p_\theta(x) = \frac{1}{Z(\theta)}f_\theta(x)
+p_\theta(x) = \frac{1}{Z(\theta)}f_\theta(x)
 \end{equation}
 
 where $Z(\theta)$, known as the normalizing constant or partition function, is defined as
 
 \begin{equation}
-	Z(\theta) = \int f_\theta(x) dx.
-	\label{eq:partition}
+Z(\theta) = \int f_\theta(x) dx.
+\label{eq:partition}
 \end{equation}
 
-Image that we are given a set of training data-points $X=\{x_1,\ldots,x_N\}$. We can learn our model parameters $\theta$ by maximizing the probability of a the training set $X$, or,the likelihood of parameter $\theta$ given $X$:
+Image that we are given a set of training data-points $X=\{x_1,\ldots,x_N\}$. We can learn our model parameters $\theta$ by maximizing the likelihood of a the training set $X$:
 
 \begin{equation}
-	\mathcal{L}(\theta\mid X) = \prod_{i=1}^N \frac{1}{Z(\theta)} f_\theta(x_i).
+\mathcal{L} (\theta) = \prod_{i=1}^N \frac{1}{Z(\theta)} f_\theta(x_i).
 \end{equation}
 
-or, equivalently, by minimizing the negative $\log(\cdot)$ of $p_\theta(X)$, which we shall call energy:
+or, equivalently, by minimizing the negative $\log$ of $\mathcal{L}(\theta)$, which we shall call energy:
 
 \begin{equation}
-	\mathcal{E}_\theta(X) = \log Z(\theta) - \frac{1}{N} \sum_{i=1}^n \log f_\theta(x_i).
-	\label{eq:energy}
+\mathcal{E}_\theta(X) = \log Z(\theta) - \frac{1}{N} \sum_{i=1}^N \log f_\theta(x_i).
+\label{eq:energy}
 \end{equation}
 
 First, let us choose our probability model function $f_\theta(x)$ to be the pdf of a normal distribution $x\sim\mathcal{N}(\mu, \sigma)$ where $\theta = \{\mu,\sigma\}$:
 
 \begin{equation}
-	f_\theta(x) = \mathcal{N}(x; \mu, \sigma).
+f_\theta(x) = \mathcal{N}(x; \mu, \sigma).
 \end{equation}
 
 By Kolmogorov's second axiom of probability, $\int f_\theta(x) dx = 1$, so that $\log Z(\theta) = 0$. Differentiation of (\ref{eq:energy}) with respect to $\mu$ shows that the optimal $\mu$ is the mean of the training set $X$:
 
 \begin{gather*}
-	\frac{\partial}{\partial\mu} \mathcal{E}_\theta(X) = \frac{\partial}{\partial\mu} \log \int f_\theta(x) dx - \frac{1}{n} \sum_{i=1}^N \frac{\partial}{\partial\mu} \log f_\theta(x_i)
-	\propto \frac{1}{2} \sum_{i=1}^N \frac{\partial}{\partial\mu} (x_i-\mu)^2,\\
-	\frac{\partial}{\partial\mu} \mathcal{E}_\theta(X)\rvert_{\mu=\hat{\mu}} = 0 \implies \hat{\mu} = \frac{1}{N} \sum_{i=0}^n x_i.
+\frac{\partial}{\partial\mu} \mathcal{E}_\theta(X) = \frac{\partial}{\partial\mu} \log \int f_\theta(x) dx - \frac{1}{n} \sum_{i=1}^N \frac{\partial}{\partial\mu} \log f_\theta(x_i)
+\propto \frac{1}{2} \sum_{i=1}^N \frac{\partial}{\partial\mu} (x_i-\mu)^2,\\
+\frac{\partial}{\partial\mu} \mathcal{E}_\theta(X)\big\rvert_{\hat{\mu}} = 0 \implies \hat{\mu} = \frac{1}{N} \sum_{i=0}^N x_i.
 \end{gather*}
 
 Similarly, differentiation of (\ref{eq:energy}) with respect to $\sigma$ shows that the optimal $\sigma$ is the square root of the variant of the training set $X$. Sometimes, as in this case, an optimization method exists that can exactly minimize our particular energy function. If we imagine our energy function to be an undulating landscape, whose lowest point we wish to find, then we could draw the metaphor of being in this field on a clear, sunny day, seeing the lowest point and walking straight to it.
@@ -94,8 +100,8 @@ Similarly, differentiation of (\ref{eq:energy}) with respect to $\sigma$ shows t
 Now, let us choose our probability model function $f_\theta(x)$ to be the sum of $K$ normal distributions where $\theta = \{(\mu_k, \sigma_k) : k=1,\ldots,K \}$:
 
 \begin{equation}
-	f_\theta(x) = \sum_{k=1}^K \mathcal{N}(x; \mu_k, \sigma_k).
-	\label{eq:mixture}
+f_\theta(x) = \sum_{k=1}^K \mathcal{N}(x; \mu_k, \sigma_k).
+\label{eq:mixture}
 \end{equation}
 
 We usually refer to (\ref{eq:mixture}) as mixture or sum-of-experts model. Again, using the fact that a normal distribution must integrate to 1, we can inspect (\ref{eq:partition}) to see that $\log Z(\theta) = \log N$ holds. However, differentiation of (\ref{eq:energy}) with respect to our model parameters results in equations dependent on other model parameters. In this case, we cannot calculate the optimal parameters directly, i.e. in closed-form. Instead, we may use the partial differential equations and a gradient descent method with line search to find a local minimum of the energy in the parameter space.
@@ -115,30 +121,94 @@ This is where CD comes into play as a remedy. Even though we are not able to eva
 
 \section{How does CD work?}
 
-As explained, CD estimates the gradient of the energy function, given a set of model parameters $\theta$, and training data $X$. We will recap, more formally, and show how CD works.
-
 Consider a probability distribution over a vector $x$ with model parameters $\theta$
 
 \begin{equation}
-	p_\theta(x) = \frac{1}{Z(\theta)}\exp\{-\mathcal{E}_\theta(x)\}
+p_\theta(x) = \frac{1}{Z(\theta)} f_\theta(x)
 \end{equation}
 
-where $Z(\theta) = \int \exp\{-\mathcal{E}_\theta(x)\} dx.$ is known as the normalizing constant or partition function, and $\mathcal{E}_\theta(x)$ denotes the energy function. Maximum Likelihood (ML) learning of parameters $\theta$ given i.i.d. samples $X={x_1,\ldots,x_N}$ may be done by gradient ascent:
+where $Z(\theta)$, known as the normalizing constant or partition function is defined as
 
 \begin{equation}
-	\theta^{(\tau+1)} = \theta^{(\tau)} + \eta \frac{\partial\mathcal{L}(\theta\vert X)}{\partial \theta} \Big\vert_{\theta^{(\tau)}} 
+Z(\theta) = \int \exp f_\theta(x) dx
 \end{equation}
 
-where $\eta$ denotes the learning rate. The average log-likelihood is
+and $\mathcal{E}_\theta(x)$ denotes the energy function. Maximum Likelihood (ML) learning of parameters $\theta$ given i.i.d. samples $X=\{x_1,\ldots,x_N\}$ may be done by gradient ascent:
 
 \begin{equation}
-	\mathcal{L}(\theta\vert X)
-	= \frac{1}{N} \sum_{i=1}^{N} \log p_\theta(x_i)
-	= \langle\log p_\theta(x) \rangle
-	=-\langle\mathcal{E}_\theta\rangle_0 - \log Z(\theta)
+\theta^{(\tau+1)} = \theta^{(\tau)} + \eta \frac{\partial\mathcal{L}(\theta)}{\partial \theta} \bigg\vert_{\theta^{(\tau)}}
 \end{equation}
 
-where 
+where $\eta$ denotes the learning rate and $\mathcal{L}(\theta)$ is known as the average log-likelihood
+
+\begin{equation}
+\mathcal{L}(\theta) = \frac{1}{N} \sum_{i=1}^{N} \log p_\theta(x_i).
+\end{equation} 
+
+We want to maximize the likelihood, or equivalently, minimizing the negative of $\mathcal{L}(\theta)$, which we shall call energy:
+
+\begin{equation}
+\mathcal{E}_\theta(X) = \log Z(\theta) - \frac{1}{N} \sum_{i=1}^N \log f_\theta(x_i).
+\label{eq:energy}
+\end{equation}
+
+Since we want to maximize the likelihood, we will derive the gradient equation by firstly writing down the partial derivative of (\ref{eq:energy}):
+
+\begin{align}
+\frac{\partial\mathcal{E}_\theta(X)}{\partial\theta}
+&= \frac{\partial\log Z(\theta)}{\partial\theta} - \frac{1}{N}\sum_{i=1}^N\frac{\partial\log f_\theta(x_i)}{\partial\theta}\\
+&= \frac{\partial\log Z (\theta)}{\partial\theta} - \left\langle\frac{\partial\log f_\theta (x)}{\partial\theta}\right\rangle_X 
+\label{eq:gradient}
+\end{align}
+
+where $\langle\cdot\rangle_X$ is the expectation with respect to the data distribution of $X$. The first term on the right-hand side comes from the partition function $Z(\theta)$, which, as equation (\ref{eq:partition}), involves the integration over $x$. By substitution, we get
+
+\begin{align}
+\frac{\partial\log Z(\theta)}{\partial\theta}
+&= \frac{1}{Z(\theta)}\frac{\partial Z(\theta)}{\partial\theta}\\
+&= \frac{1}{Z(\theta)}\frac{\partial}{\partial\theta}\int f_\theta(x)dx\\
+&= \frac{1}{Z(\theta)}\int \frac{\partial f_\theta(x)}{\partial\theta} dx\\
+&= \frac{1}{Z(\theta)}\int f_\theta(x)\frac{\partial\log f_\theta(x)}{\partial\theta}dx\\
+&= \int p_\theta(x) \frac{\partial\log f_\theta(x)}{\partial\theta}dx\\
+&= \left\langle \frac{\partial\log f_\theta (x)}{\partial\theta} \right\rangle_{p_\theta(x)}. \label{eq:logZ}
+\end{align}
+
+This integration is algebraically intractable. However, in the form of (\ref{eq:logZ}), we can see that the expectation can be numerically approximated by drawing samples from the proposed distribution $p_\theta (x)$. However, samples cannot be drawn directly from $p_\theta(x)$ as we can not evaluate the partition function, but we may use many cycles of Markov Chain Monte Carlo (MCMC) sampling to transform our training data (drawn from the target distribution) into data drawn from the proposed distribution. This is possible as the transformation only involves calculating the ratio of two probabilities, namely the quotient $p_\theta(x') / p_\theta(x)$, so the partition function cancels out.
+
+Let $X^n$ denote the transformed training data using $n$ cycles of MCMC, such that $X^0 = X$. Putting this back into (\ref{eq:logZ}), we get:
+
+\begin{equation}
+\frac{\partial\mathcal{E}_\theta (X)}{\partial\theta} = \left\langle \frac{\partial\log f_\theta(x)}{\partial\theta} \right\rangle_{X^\infty} - \left\langle \frac{\partial\log f_\theta (x)}{\partial\theta} \right\rangle_{X^0}.
+\end{equation}
+
+Lastly, we still have the computational hurdle of too many MCMC cycles which are required to compute an accurate estimate of the gradient. Hinton assumed that only very few MCMC cycles would be needed to calculate an approximate gradient.
+
+Hinton's assertion was that only a few MCMC cycles would be needed to calculate an approximate gradient. The intuition behind this is that after
+a few iterations the data will have moved from the target distribution (i.e. that of the training data) towards the proposed distribution, and so give an idea in which direction the proposed distribution should move to better model the training data. Empirically, Hinton has found that even 1 cycle of MCMC is sufficient for the algorithm to converge to the ML answer. 
+
+As such, bearing in mind that we wish to go downhill in order to minimize our energy function, our parameter update equation can be written as:
+
+\begin{equation}
+\theta^{(\tau+1)} = \theta^{(\tau)} - \eta \left( \left\langle \frac{\partial\log f_\theta(x)}{\partial\theta} \right\rangle_{X^1} - \left\langle \frac{\partial\log f_\theta (x)}{\partial\theta} \right\rangle_{X^0} \right)
+\end{equation}
+
+where $\eta$ is the step size.
+
+\section{Why the name?}
+
+Maximum likelihood learning minimizes the Kullback-Leibler divergence:
+
+\begin{equation}
+KL\left(p_0 \Vert p_\infty \right) = \int p_0(x) \log\frac{p_0(x)}{p_\theta(x)}.
+\end{equation}
+
+Contrastive divergence learning approximately follows the gradient of the difference of two divergences:
+
+\begin{equation}
+CD_n = KL\left(p_0 \Vert p_\infty \right) - KL\left(p_n \Vert p_\infty \right).
+\end{equation}
+
+In CD learning, we start the Markov chain at the data distribution $p_0$ and run the chain for a small number of $n$ steps (e.g. $n=1$). This greatly reduces both the computation per gradient step and the variance of the estimated gradient.
 
 \bibliographystyle{plain}
 \bibliography{\jobname} 
