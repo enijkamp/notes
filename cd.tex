@@ -47,11 +47,11 @@
 
 Contrastive Divergence (CD) is an approximative Maximum Likelihood (ML) learning algorithm proposed by Geoffrey Hinton \cite{Hinton:2002, carreiraperpinan:2005}.
 
-% ToDO:
-% Cleanup notation, e.g. average / expectation.
-% Rewrite with gibbs dist and modified energy function p_\theta(x) = \frac{1}{Z(\theta)}\exp\[\mathcal{E}_\theta(x)\]
-% Relation to KL
-% Origin of name CD
+% todo:
+%
+% - Cleanup notation, e.g. average / expectation.
+% - Rewrite with gibbs dist and modified energy function p_\theta(x) = \frac{1}{Z(\theta)}\exp\[\mathcal{E}_\theta(x)\]
+% - More precise relation to KL
 
 \section{Why CD?}
 
@@ -178,8 +178,10 @@ This integration is algebraically intractable. However, in the form of (\ref{eq:
 Let $X^n$ denote the transformed training data using $n$ cycles of MCMC, such that $X^0 = X$. Putting this back into (\ref{eq:logZ}), we get:
 
 \begin{equation}
-\frac{\partial\mathcal{E}_\theta (X)}{\partial\theta} = \left\langle \frac{\partial\log f_\theta(x)}{\partial\theta} \right\rangle_{X^\infty} - \left\langle \frac{\partial\log f_\theta (x)}{\partial\theta} \right\rangle_{X^0}.
+\frac{\partial\mathcal{E}_\theta (X)}{\partial\theta} = \left\langle \frac{\partial\log f_\theta(x)}{\partial\theta} \right\rangle_{X^\infty} - \left\langle \frac{\partial\log f_\theta (x)}{\partial\theta} \right\rangle_{X^0}
 \end{equation}
+
+where $\langle\cdot\rangle_{X^\infty}$ denotes the expectation with respect to the model distribution $p_\infty(x) = p_\theta(x)$ and $\langle\cdot\rangle_{X^0}$ denotes the expectation with respect to the data distribution $p_0(x) = \frac{1}{N}\sum_{i=1}^N \delta ( x-x_i )$.
 
 Lastly, we still have the computational hurdle of too many MCMC cycles which are required to compute an accurate estimate of the gradient. Hinton assumed that only very few MCMC cycles would be needed to calculate an approximate gradient.
 
