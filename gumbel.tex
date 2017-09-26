@@ -1,7 +1,5 @@
 \documentclass[11pt]{article}
-
-\usepackage{geometry}
-\geometry{letterpaper}                   
+                
 \usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage{epstopdf}
@@ -35,7 +33,9 @@
 	{\LARGE On the Gumbel-Softmax Trick\\[6pt] for Inference of Discrete Variables} 
 \end{center}
 
-The reparameterization trick enables optimizing stochastic computation graphs via gradient descent. The essence of the trick is to refactor each stochastic node into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule through the graph are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such reparameterizations, discrete random variables lack useful reparameterizations due to the discontinuous nature of discrete states. As a remedy, the concrete distribution serves as a continuous relaxation of discrete random variables.
+\begin{abstract}
+The re-parameterization trick enables optimizing stochastic computation graphs via gradient descent. The essence of the trick is to re-factor each stochastic node into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule through the graph are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such re-parameterizations, discrete random variables lack useful re-parameterizations due to the discontinuous nature of discrete states. As a remedy, the concrete distribution serves as a continuous relaxation of discrete random variables.
+\end{abstract}
 
 \section{Reparameterization Trick}
 
@@ -51,18 +51,29 @@ In other words, to compute the expectation of $z = g(\eps)$ we only need to know
 \E_{\eps\sim p(\eps)}(g(\eps)) = \E_{z\sim p(z)}(z).
 \end{equation}
 
-Further, suppose $z$ has a distribution that depends on a parameter $\phi$, i.e. $z\sim p_\phi (z)$. Moreover, assume one can express $z = g(\eps, \phi)$ for known function $g$ and a certain noise distribution, e.g. $\eps\sim\mathcal{N}(0,1)$. Then LOTUS states that for any measurable function $f$:
+Now, suppose $z$ has a distribution that depends on a parameter $\phi$, i.e. $z\sim p_\phi (z)$. Moreover, assume one can express $z = g(\eps, \phi)$ for known function $g$ and a certain noise distribution, e.g. $\eps\sim\mathcal{N}(0,1)$. Then LOTUS states that for any measurable function $f$:
 
 \begin{equation}
 \E_{z\sim p_\phi (z)}(f(z)) = \E_\eps\sim p(\eps)(f(g(\eps,\phi))).
 \end{equation}
 
-Now, in black-box variational inference formulations we encounter the gradient of some expectation with respect to a parameter $\phi$ and use the following equality:
+In black-box variational inference formulations we encounter the gradient of some expectation with respect to a parameter $\phi$ and use the following equality:
 
 \begin{equation}
 \nabla_\phi\E_{z\sim p(z)} = \nabla_\phi\E_{\eps\sim p(\eps)}(f(g(\eps,\phi))) = \E_{\eps\sim p(\eps)}(\nabla f(g(\eps,\phi))).
 \end{equation}
 
+Further, we have conveniently expressed $z$ so that expectations of functions of $z$ can be expressed as integrals with respect to a density that does not depend on the parameter. Therefore, we can exchange the expectation and gradient.
+
+Finally, the re-parameterization gives rise to an unbiased estimate of the above gradient via MCMC:
+
+\begin{equation}
+\nabla_\phi\E_{z\sim p(z)} \approx \frac{1}{N} \sum_{i=1}^N \nabla f(g(\eps_i, \phi)).
+\end{equation}
+
+For reasons not yet completely understood, empirically it is seen this re-parameterization based estimate of the gradient exhibits much less variance than competing estimators.
+
+\section{Variational Inference}
 
 \bibliographystyle{plain}
 \bibliography{\jobname} 
