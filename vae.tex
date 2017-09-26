@@ -1,0 +1,886 @@
+\documentclass[11pt]{article}
+
+\usepackage{geometry}
+\geometry{letterpaper}                   
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{filecontents}
+
+\makeatletter
+
+\theoremstyle{plain}
+\newtheorem{thm}{\protect\theoremname}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{\protect\definitionname}
+\theoremstyle{plain}
+\newtheorem{lem}[thm]{\protect\lemmaname}
+
+\usepackage[caption=false,font=footnotesize]{subfig}
+\renewcommand{\qedsymbol}{\rule{0.6em}{0.6em}}
+
+\makeatother
+
+\providecommand{\definitionname}{Definition}
+\providecommand{\lemmaname}{Lemma}
+\providecommand{\theoremname}{Theorem}
+
+\usepackage{filecontents}
+\begin{filecontents}{\jobname.bib}
+@misc{doersch2016tutorial,
+	Abstract = {In just three years, Variational Autoencoders (VAEs) have emerged as one of
+		the most popular approaches to unsupervised learning of complicated
+		distributions. VAEs are appealing because they are built on top of standard
+		function approximators (neural networks), and can be trained with stochastic
+		gradient descent. VAEs have already shown promise in generating many kinds of
+		complicated data, including handwritten digits, faces, house numbers, CIFAR
+		images, physical models of scenes, segmentation, and predicting the future from
+		static images. This tutorial introduces the intuitions behind VAEs, explains
+		the mathematics behind them, and describes some empirical behavior. No prior
+		knowledge of variational Bayesian methods is assumed.},
+	Added-At = {2016-06-22T20:16:05.000+0200},
+	Author = {Doersch, Carl},
+	Biburl = {https://www.bibsonomy.org/bibtex/2f5d624f4117178f13b0d2aee29936325/galeone},
+	Date-Added = {2017-06-16 23:44:42 +0000},
+	Date-Modified = {2017-06-16 23:44:42 +0000},
+	Description = {[1606.05908] Tutorial on Variational Autoencoders},
+	Interhash = {c3acb6be4efb65eab8143d4795e0bc69},
+	Intrahash = {f5d624f4117178f13b0d2aee29936325},
+	Keywords = {VAE sgd},
+	Note = {cite arxiv:1606.05908},
+	Timestamp = {2016-06-22T20:16:05.000+0200},
+	Title = {Tutorial on Variational Autoencoders},
+	Url = {http://arxiv.org/abs/1606.05908},
+	Year = 2016,
+	Bdsk-Url-1 = {http://arxiv.org/abs/1606.05908}}
+
+@inproceedings{icml2014c2_rezende14,
+	Abstract = {We marry ideas from deep neural networks and approximate Bayesian inference to derive a generalised class of deep, directed generative models, endowed with a new algorithm for scalable inference and learning. Our algorithm introduces a recognition model to represent an approximate posterior distribution and uses this for optimisation of a variational lower bound. We develop stochastic backpropagation -- rules for gradient backpropagation through stochastic variables -- and derive an algorithm that allows for joint optimisation of the parameters of both the generative and recognition models. We demonstrate on several real-world data sets that by using stochastic backpropagation and variational inference, we obtain models that are able to generate realistic samples of data, allow for accurate imputations of missing data, and provide a useful tool for high-dimensional data visualisation.},
+	Author = {Danilo J. Rezende and Shakir Mohamed and Daan Wierstra},
+	Booktitle = {Proceedings of the 31st International Conference on Machine Learning (ICML-14)},
+	Date-Added = {2017-06-13 15:39:06 +0000},
+	Date-Modified = {2017-06-13 15:39:06 +0000},
+	Editor = {Tony Jebara and Eric P. Xing},
+	Pages = {1278-1286},
+	Publisher = {JMLR Workshop and Conference Proceedings},
+	Title = {Stochastic Backpropagation and Approximate Inference in Deep Generative Models},
+	Url = {http://jmlr.org/proceedings/papers/v32/rezende14.pdf},
+	Year = {2014},
+	Bdsk-Url-1 = {http://jmlr.org/proceedings/papers/v32/rezende14.pdf}}
+
+@inproceedings{icml2015_rezende15,
+	Author = {Rezende, Danilo and Mohamed, Shakir},
+	Booktitle = {Proceedings of the 32nd International Conference on Machine Learning (ICML-15)},
+	Date-Added = {2017-06-13 11:17:30 +0000},
+	Date-Modified = {2017-06-13 11:17:30 +0000},
+	Editor = {David Blei and Francis Bach},
+	Pages = {1530-1538},
+	Publisher = {JMLR Workshop and Conference Proceedings},
+	Title = {Variational Inference with Normalizing Flows},
+	Url = {http://jmlr.org/proceedings/papers/v37/rezende15.pdf},
+	Year = {2015},
+	Bdsk-Url-1 = {http://jmlr.org/proceedings/papers/v37/rezende15.pdf}}
+
+@article{DBLP:journals/corr/KingmaSW16,
+	Author = {Diederik P. Kingma and Tim Salimans and Max Welling},
+	Bibsource = {dblp computer science bibliography, http://dblp.org},
+	Biburl = {http://dblp.uni-trier.de/rec/bib/journals/corr/KingmaSW16},
+	Date-Added = {2017-06-13 11:14:37 +0000},
+	Date-Modified = {2017-06-13 11:14:37 +0000},
+	Journal = {CoRR},
+	Timestamp = {Wed, 07 Jun 2017 14:40:11 +0200},
+	Title = {Improving Variational Inference with Inverse Autoregressive Flow},
+	Url = {http://arxiv.org/abs/1606.04934},
+	Volume = {abs/1606.04934},
+	Year = {2016},
+	Bdsk-Url-1 = {http://arxiv.org/abs/1606.04934}}
+
+@article{DBLP:journals/corr/MnihG14,
+	Author = {Andriy Mnih and Karol Gregor},
+	Bibsource = {dblp computer science bibliography, http://dblp.org},
+	Biburl = {http://dblp.uni-trier.de/rec/bib/journals/corr/MnihG14},
+	Date-Added = {2017-06-13 10:56:08 +0000},
+	Date-Modified = {2017-06-13 10:56:08 +0000},
+	Journal = {CoRR},
+	Timestamp = {Wed, 07 Jun 2017 14:40:03 +0200},
+	Title = {Neural Variational Inference and Learning in Belief Networks},
+	Url = {http://arxiv.org/abs/1402.0030},
+	Volume = {abs/1402.0030},
+	Year = {2014},
+	Bdsk-Url-1 = {http://arxiv.org/abs/1402.0030}}
+
+@article{DBLP:journals/corr/BowmanVVDJB15,
+	Author = {Samuel R. Bowman and Luke Vilnis and Oriol Vinyals and Andrew M. Dai and Rafal J{\'{o}}zefowicz and Samy Bengio},
+	Bibsource = {dblp computer science bibliography, http://dblp.org},
+	Biburl = {http://dblp.uni-trier.de/rec/bib/journals/corr/BowmanVVDJB15},
+	Date-Added = {2017-06-13 09:30:19 +0000},
+	Date-Modified = {2017-06-13 09:30:19 +0000},
+	Journal = {CoRR},
+	Timestamp = {Wed, 07 Jun 2017 14:40:20 +0200},
+	Title = {Generating Sentences from a Continuous Space},
+	Url = {http://arxiv.org/abs/1511.06349},
+	Volume = {abs/1511.06349},
+	Year = {2015},
+	Bdsk-Url-1 = {http://arxiv.org/abs/1511.06349}}
+
+@incollection{NIPS2014_5423,
+	Author = {Goodfellow, Ian and Pouget-Abadie, Jean and Mirza, Mehdi and Xu, Bing and Warde-Farley, David and Ozair, Sherjil and Courville, Aaron and Bengio, Yoshua},
+	Booktitle = {Advances in Neural Information Processing Systems 27},
+	Date-Added = {2017-06-13 09:29:09 +0000},
+	Date-Modified = {2017-06-13 09:29:09 +0000},
+	Editor = {Z. Ghahramani and M. Welling and C. Cortes and N. D. Lawrence and K. Q. Weinberger},
+	Pages = {2672--2680},
+	Publisher = {Curran Associates, Inc.},
+	Title = {Generative Adversarial Nets},
+	Url = {http://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf},
+	Year = {2014},
+	Bdsk-Url-1 = {http://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf}}
+
+@article{DBLP:journals/corr/HaE17,
+	Author = {David Ha and Douglas Eck},
+	Bibsource = {dblp computer science bibliography, http://dblp.org},
+	Biburl = {http://dblp.uni-trier.de/rec/bib/journals/corr/HaE17},
+	Date-Added = {2017-06-13 09:12:15 +0000},
+	Date-Modified = {2017-06-13 09:12:15 +0000},
+	Journal = {CoRR},
+	Timestamp = {Wed, 07 Jun 2017 14:40:42 +0200},
+	Title = {A Neural Representation of Sketch Drawings},
+	Url = {http://arxiv.org/abs/1704.03477},
+	Volume = {abs/1704.03477},
+	Year = {2017},
+	Bdsk-Url-1 = {http://arxiv.org/abs/1704.03477}}
+
+@article{DBLP:journals/corr/OordKK16,
+	Author = {A{\"{a}}ron van den Oord and Nal Kalchbrenner and Koray Kavukcuoglu},
+	Bibsource = {dblp computer science bibliography, http://dblp.org},
+	Biburl = {http://dblp.uni-trier.de/rec/bib/journals/corr/OordKK16},
+	Date-Added = {2017-06-13 09:11:04 +0000},
+	Date-Modified = {2017-06-13 09:11:04 +0000},
+	Journal = {CoRR},
+	Timestamp = {Wed, 07 Jun 2017 14:40:22 +0200},
+	Title = {Pixel Recurrent Neural Networks},
+	Url = {http://arxiv.org/abs/1601.06759},
+	Volume = {abs/1601.06759},
+	Year = {2016},
+	Bdsk-Url-1 = {http://arxiv.org/abs/1601.06759}}
+
+@inproceedings{icml2015_gregor15,
+	Author = {Gregor, Karol and Danihelka, Ivo and Graves, Alex and Rezende, Danilo and Wierstra, Daan},
+	Booktitle = {Proceedings of the 32nd International Conference on Machine Learning (ICML-15)},
+	Date-Added = {2017-06-13 09:09:34 +0000},
+	Date-Modified = {2017-06-13 09:09:34 +0000},
+	Editor = {David Blei and Francis Bach},
+	Pages = {1462-1471},
+	Publisher = {JMLR Workshop and Conference Proceedings},
+	Title = {DRAW: A Recurrent Neural Network For Image Generation},
+	Url = {http://jmlr.org/proceedings/papers/v37/gregor15.pdf},
+	Year = {2015},
+	Bdsk-Url-1 = {http://jmlr.org/proceedings/papers/v37/gregor15.pdf}}
+
+@inproceedings{Glorot10understandingthe,
+	Author = {Xavier Glorot and Yoshua Bengio},
+	Booktitle = {In Proceedings of the International Conference on Artificial Intelligence and Statistics (AISTATS'10). Society for Artificial Intelligence and Statistics},
+	Date-Added = {2017-06-13 07:41:00 +0000},
+	Date-Modified = {2017-06-13 07:41:00 +0000},
+	Title = {Understanding the difficulty of training deep feedforward neural networks},
+	Year = {2010}}
+
+@article{journals/corr/KingmaW13,
+	Added-At = {2014-01-06T00:00:00.000+0100},
+	Author = {Kingma, Diederik P. and Welling, Max},
+	Biburl = {https://www.bibsonomy.org/bibtex/2486ad13a443259d137cb57be1dc77002/dblp},
+	Date-Added = {2017-06-13 06:07:48 +0000},
+	Date-Modified = {2017-06-13 06:07:48 +0000},
+	Ee = {http://arxiv.org/abs/1312.6114},
+	Interhash = {85731e0fbdb10b8543ea9f55301b37a5},
+	Intrahash = {486ad13a443259d137cb57be1dc77002},
+	Journal = {CoRR},
+	Keywords = {dblp},
+	Timestamp = {2014-01-07T11:34:31.000+0100},
+	Title = {Auto-Encoding Variational Bayes.},
+	Url = {http://dblp.uni-trier.de/db/journals/corr/corr1312.html#KingmaW13},
+	Volume = {abs/1312.6114},
+	Year = 2013,
+	Bdsk-Url-1 = {http://dblp.uni-trier.de/db/journals/corr/corr1312.html#KingmaW13}}
+
+\end{filecontents}
+
+\begin{document}
+	
+\begin{center}
+{\huge On Variational Auto-Encoders} 
+\end{center}
+
+Recently, Variational Auto-Encoders (VAEs) have emerged as an influential
+model in the domain of unsupervised learning. VAEs are appealing because
+they can be derived beautifully in statistical terms, they are based
+on powerful function approximators, and can be trained by stochastic
+gradient descent. In this paper, we (1) derive the formulation of
+VAEs and explain the intuition behind the model, (2) summarize recent
+results on bounds on the reconstruction error. 
+
+\section{Introduction}
+
+Unsupervised Learning is a long-standing problem in the field of high-dimensional
+Statistics and Machine Learning. Given a training set of high-dimensional
+oberservations $X_{n}=\{x_{1},x_{2},\ldots,x_{n}\}\subset\mathcal{X}$
+from an unknown distribution we would like to draw samples $x\sim P_{\theta}(x)$
+such that it resembles the observations. We assume an underyling generating
+process draws the observations $X_{n}$ from a lower-dimensional manifold.
+That is, once we have learned the manifold we can draw previously
+unseen samples. Since we are only given the observations $X_{n}$
+in this setting, we shall adopt an \textit{Auto-Encoder }regime to
+capture the manifold. This model consists of a composition of (1)
+an \textit{encoder} function, which aims to embed or encode $X_{n}\subset\mathcal{X}$
+into a latent lower-dimensional space $\mathcal{Z}$ such that each
+observation $x\in X_{n}$ will be associated with\textit{ code} $z\in\mathcal{Z}$,
+(2) an \textit{decoder} function which maps a code $z$ to a reconstruction
+in the data space $\tilde{x}\in\mathcal{X}$, and (3) as an objective
+function we aim to minimize a measure of \textit{reconstruction loss}
+$\mathcal{L}(x,\tilde{x})\propto\lVert x-\tilde{x}\rVert_{\alpha}$.
+\\
+Earlier methods suffer from three significant drawbacks: (1) Strong
+assumptions on the structure of the data, (2) severe approximations
+leading to suboptimal models, (3) inference methods with high computational
+complexity such as Markov Chain Monte Carlo (MCMC). Recent advances
+in the field of Neural Networks as function approximators open the
+door to new paradigms which overcome these hurdles \cite{journals/corr/KingmaW13}:\\
+
+\begin{enumerate}
+\item \textit{Generative Adversarial Networks (GANs)} \cite{NIPS2014_5423}:
+Pose the training process as a zero-sum game between two separate
+networks: a generator network and a discriminative network that try
+to classify samples as either coming from the true distribution $p(x)$
+or the model distribution $p_{\theta}(x)$. If discriminator notices
+a difference between the two distributions the generator adjusts its
+parameters slightly, until the generator exactly reproduces the true
+data distribution and the discriminator is guessing at random, unable
+to find a difference.
+\item \textit{Auto-Regressive Models} (PixelRNN) \cite{DBLP:journals/corr/OordKK16}:
+Instead train a network that models the conditional distribution of
+every individual pixel given previous pixels (to the left and to the
+top). This is similar to plugging the pixels of the image into a char-rnn,
+but the RNNs run both horizontally and vertically over the image instead
+of just a 1D sequence of characters.
+\item \textit{Variational Auto-Encoders (VAEs)} \cite{journals/corr/KingmaW13}:
+Allow us to formalize this problem in the framework of probabilistic
+graphical models where we are maximizing a lower bound on the log
+likelihood of the data. We cast inference as an optimization problem
+and learn neural networks to perform as inference (encoding) and generator
+(decoding) mechanisms.
+\end{enumerate}
+Specifically, Variational Auto-Encoders (VAEs) are a family of generative
+models for learning latent representations. Our goal is to learn $P_{\theta}$
+given a sample in an unsupervised manner. Since VAEs seem particularly
+appealing from a theoretical perspective, in the following we shall
+focus our attention on the derivation and interpretation of VAEs to
+gain a throughout understanding.
+
+\section{Prior Art}
+
+In \cite{journals/corr/KingmaW13}, D. Kingma and M. Welling originally
+introduce VAEs as an instantiation of an Auto-Encoding Variational
+Bayes framework. In \cite{DBLP:journals/corr/KingmaSW16}, D. Kingma
+and T. Salimans introduce a flexible and computationally scalable
+method for improving the accuracy of variational inference. In particular,
+most VAEs have so far been trained using crude approximate posteriors,
+where every latent variable is independent. Recent extensions \cite{icml2015_rezende15}
+have addressed this problem by conditioning each latent variable on
+the others before it in a chain, but this is computationally inefficient
+due to the introduced sequential dependencies.
+
+Recent applications of VAEs include (1) spatial and temporal attention
+mechanisms which can be used to draw images (Google DeepMind DRAW
+\cite{icml2015_gregor15}), (2) RNNs as encoder and decoder networks
+for sketch synthesis (Google Brain sketch-rnn) \cite{DBLP:journals/corr/HaE17},
+(3) interpolation between text sentences \cite{DBLP:journals/corr/BowmanVVDJB15}.
+
+Our main contribution is a throughout derivation of VAEs following
+\cite{journals/corr/KingmaW13} and a summary of results on bounding
+the reconstruction error based on \cite{doersch2016tutorial}.
+
+\section{Learning Latent Variable Models}
+
+Learning and sampling from Latent Variable Models in high-dimensional
+space is a non-trivial task. We shall define a problem statement which
+VAEs aim to solve and explore why traditional methods might be insufficient.
+
+\subsection{Latent Variable Models}
+
+Let $z\in\mathcal{Z}$ denote a latent variable in high-dimensional
+space $\mathcal{Z}$ where sampling $z\sim p(z)$ is tractable. Say
+we have a family of functions $f(z;\theta)$ parameterized by $\theta\in\Theta$
+where $f:\mathcal{Z}\times\Theta\rightarrow\mathcal{X}$ is deterministic.
+Note, $f(z;\theta)$ is a random variable in space $\mathcal{X}$
+since $\theta$ is fixed, but $z$ is random. We use the law ot total
+probability to denote the dependence of $X$ on $z$ in $f(z;\theta)$
+explicitly as $p_{\theta}(x\mid z)$.
+\begin{defn}[Latent Variable Model]
+Let $p_{\theta}(x,z)$ denote directed latent-variabel model of the
+form
+\begin{equation}
+p_{\theta}(x,z)=p_{\theta}(x\mid z)p_{\theta}(z)
+\end{equation}
+\end{defn}
+with observed $x\in\mathcal{X}$ and latent $z\in\mathcal{Z}$.\\
+
+\noindent We can generalize the models to many layers by the chain
+rule $p_{\theta}(x\mid z_{1})p_{\theta}(z_{2}\mid z_{3})\cdots p_{\theta}(z_{m-1}\mid z_{m})p_{\theta}(z_{m})$.
+These are called deep generative models and can learn a hierchical
+latent represenent. In this paper, we will assue for simplicity that
+there is only one such layer. Suppose we are given a sample $X_{n}=\left\{ x_{1},x_{2},\ldots x_{n}\right\} $.
+We are interested in three tasks (1) learning the parameters $\theta$
+of $p_{\theta}(\cdot)$, (2) approximative posterior inference over
+$z$ and (3) sampling $x\sim p_{\theta}(x\mid z)$ given $z$. Further,
+we will make the following additional assumptions: (A1) computing
+the posterior probability $p_{\theta}(x\mid z)$ is intractable, (A2)
+the cardinality $n$ of sample $X_{n}$ is exceeding the memory capacity.
+
+\subsection{Objective Function}
+
+In a maximum likelihood framework we choose parameters $\theta$ such
+that the model is likely to generate the training set and assume it
+will likely generate similar samples while it is unlikely to generate
+dissimlar ones.
+\begin{defn}[Objective function]
+Given a training set $X_{n}=\left\{ x_{1},x_{2},\ldots x_{n}\right\} \subset\mathcal{X}$
+the objective is to maximize the log-likelihood of each $x\in X_{n}$
+\begin{equation}
+\begin{aligned}\theta^{*} & =\underset{\theta}{argmax}\log\prod_{i=1}^{n}p_{\theta}(x_{i})\\
+ & =\underset{\theta}{argmax}\sum_{i=1}^{n}\log p_{\theta}(x_{i})\\
+ & =\underset{\theta}{argmax}\sum_{i=1}^{n}\log\int p_{\theta}(x_{i}\mid z)p_{\theta}(z)dz.
+\end{aligned}
+\label{eq:log_like}
+\end{equation}
+
+Note, both computing posterior probability $p_{\theta}(x\mid z)$
+and integration over $z$ are intractable and therefore evidence $p_{\theta}(x)$
+is intractable. We shall later see that in the case of VAEs objective
+functions is equivalent to minimizing (1) the mean squared reconstruction
+loss $\mathcal{L}(x,\tilde{x})=\frac{1}{n}\lVert x-\tilde{x}\rVert_{2}^{2}$
+as stated in the introduction and (2) an additional divergence term
+from a prior distribution $p(z)$.
+\end{defn}
+
+\subsection{Traditional Methods}
+
+There are several traditional techiques that could be used to learn
+this model which do not rely on Neural Networks. We will briefly describe
+why these methods might not be suitable:
+
+(1) The \textit{EM-algorithm} can learn latent-variable models. Note
+that performing the E-step requires the computation of the posterior
+$p_{\theta}(x\mid z)$ which by assumption (A1) is intractable. Further,
+in the M-step we want to determine $\theta$ by maximizing the expected
+value of the log likelihood function which requires to store $X_{n}$
+in memory violating assumption (A2).
+
+(2) The \textit{mean-field} method can be used to perform approximative
+inference. However, mean field requires the computation of an expectation
+whose time complexity scales exponentially with the size of the Markov
+blanket of the target variable. Observe that $p$ will contain a factor
+$p(x\mid z_{1},\ldots,z_{k})$ in which all the $z$ variables are
+tied. This will make mean-field intractable.
+
+(3) The \textit{sampling-based} techniques such as Metropolis-Hastings
+not only do not scale well in general to large datasets $X_{n}$,
+but also require a hand-crafted proposal distribution, which can be
+an art in itself.
+
+\section{Variational Auto-Encoders}
+
+As an introduction to the concept of Auto-Encoders, we will argue
+that VAEs can be seen as a non-linear extension of PCA. Then we will
+derive the formulation of VAEs as an instantiation of Auto-Encoding
+Variational Bayes (AEVB) which turn our three inference and learning
+tasks into tractable problems \cite{journals/corr/KingmaW13}. Since
+the log-likelihood in \eqref{eq:log_like} is not tractable, we will
+(1) derive a tractable \textit{evidence lower bound} (ELBO) by variational
+inference which we can maximize to increase $\log p_{\theta}(x)$,
+(2) derive a low-variance estimator of the gradient of the ELBO using
+the \textit{re-parameterization trick}, and (3) parameterize the distributions
+$p_{\theta}$ and $q_{\phi}$ by the means of \textit{neural networks}.
+
+\subsection{Auto-Encoder}
+
+The PCA algorithm is a old and trusted standard method in Statistics.
+The PCA method consists of three disjoint steps: (1) Computing the
+principal components, (2) projecting the data to obtain a low-dimensional
+representation, and (3) reconstructing the original data set. We show
+how steps (2) and (3) may fit the definition of a linear auto-encoder.
+
+The term auto-encoder orginates from the domain of neural networks.
+In this paper, we will treat auto-encoders as a simple composition
+of an \textit{encoder $g(\cdot)$} and \textit{decoder $f(\cdot)$}
+function such that a reconstruction error is minimized. 
+\begin{defn}[Auto-Encoder]
+Let $g:\mathcal{X}\rightarrow\mathcal{Z}$ and $f:\mathcal{Z}\rightarrow\mathcal{X}$
+be to functions such that their composition $\tilde{x}=f(g(x))$ with
+$x\in\mathcal{X}$ minimizes the reconstruction error $\mathcal{L}(x,\tilde{x})\propto\lVert\tilde{x}-x\rVert_{\alpha}$
+over some norm. Then
+\begin{equation}
+(g,f)=\underset{g,f}{argmin\,}\mathcal{L}(x,(f\circ g)(x)).
+\end{equation}
+\end{defn}
+\noindent Specifically in the case of PCA, we can define the reconstruction
+error $\mathcal{L}(x,\tilde{x})=\lVert\tilde{x}-x\rVert_{2}^{2}$
+which for the first principal component leads to the optimization
+problem
+\begin{equation}
+\omega_{1}=\underset{\lVert w\rVert_{2}=1}{argmin\,}\lVert X-X\omega\omega^{T}\rVert_{2}^{2}.
+\end{equation}
+
+\noindent Assume we keep the full basis of eigenvectos $W$ with full-rank
+and interpret $W$ as an orthogonal basis rotation. Then we define
+the \textit{encoder} as $g(X)=XW$ and \textit{decoder} as $f(Z)=ZW^{T}$.
+Further, observe that we can now sample from the latent space $\mathcal{Z}$
+by probabilistic PCA.
+\begin{defn}[Probabilistic PCA]
+ Let $W$ be eigenvectors with latent space $z\in\mathcal{Z}$ and
+variance $\sigma^{2}$
+
+\begin{equation}
+\begin{array}{cc}
+ & x=Wz+\epsilon,\\
+ & z\sim\mathcal{N}(0,I),\,\epsilon\sim\mathcal{N}(0,\sigma^{2}I),\\
+ & x\mid z\sim\mathcal{N}(Wz,\sigma^{2}I).
+\end{array}
+\end{equation}
+\end{defn}
+In the following, we will see that VAEs can be understood as a non-linear
+extension of PCA.
+
+\subsection{Evidence Lower Bound}
+
+In the variational family of algorithms, inference is to cast as an
+optimization problem using variational calculus. Suppose we are given
+an intractable posterior probability distribution $P_{\theta}(Z\mid X)$,
+variational techniques will try to solve an optimization problem over
+a family of tractable distributions $Q_{\phi}(Z\mid X)$ .
+
+Assume we choose $Q_{\phi}(Z\mid X)$, say Gaussian family, then we
+want to adjust the parameters $\phi$ such that some measure of divergence
+between $Q_{\phi}(Z\mid X)$ and $P_{\theta}(Z\mid X)$ is minimized.
+Mean-field variational Bayes employs the reverse Kullback-Leibler
+divergence as such divergence metric between two distributions.
+\begin{defn}[Reverse Kullback-Leibler Divergence]
+Let $Q$ and $P$ denote two probability distributions. Define divergence
+$D_{KL}(Q\rVert P)$ as
+\begin{equation}
+D_{KL}(Q\rVert P)=\int q(z\mid x)\log\frac{q(z\mid x)}{p(z\mid x)}dx.
+\end{equation}
+\end{defn}
+This measure of divergence allows us to formulate variational inference
+as optimization problem.
+\begin{defn}[Variational-Inference Optimization Problem]
+Let $Q_{\phi}\in\mathcal{F}$ denote a distribution in family $\mathcal{F}$
+with variational parameters $\phi$ and $P_{\theta}$ a target distribution
+with fixed $\theta$. Then
+\begin{equation}
+Q_{\phi}=\underset{\phi}{argmin\,}D_{KL}(Q_{\phi}\rVert P_{\theta}).\label{eq:var_opt_prob}
+\end{equation}
+\end{defn}
+We substitute the definition of the conditional distribution and distribute\textit{
+\begin{equation}
+\begin{aligned}D_{KL}(Q_{\phi}\rVert P_{\theta}) & =\int q_{\phi}(z\mid x)\log\frac{q_{\phi}(z\mid x)}{p_{\theta}(z\mid x)}dz\\
+ & =\int q_{\phi}(z\mid x)\log\frac{q_{\phi}(z\mid x)p_{\theta}(x)}{p_{\theta}(z,x)}dz\\
+ & =\int q_{\phi}(z\mid x)\left(\log\frac{q_{\phi}(z\mid x)}{p_{\theta}(z,x)}+\log p_{\theta}(x)\right)dz\\
+ & =\int q_{\phi}(z\mid x)\log\frac{q_{\phi}(z\mid x)}{p_{\theta}(z,x)}dz\\
+ & +\log p_{\theta}(x)\int q_{\phi}(z\mid x)dz\\
+ & =\int q_{\phi}(z\mid x)\log\frac{q_{\phi}(z\mid x)}{p_{\theta}(z,x)}dz+\log p_{\theta}(x).
+\end{aligned}
+\label{eq:var_kl_derive}
+\end{equation}
+}
+
+\noindent Observe in order to minimize $D_{KL}(Q_{\phi}\rVert P_{\theta})$
+with respect to $\phi$ , we only need to minimize $\int q_{\phi}(z\mid x)\log\frac{q_{\phi}(z\mid x)}{p_{\theta}(z,x)}dz$
+since $\log p_{\theta}(x)$ is fixed under $\phi$. We rewrite this
+quantity as expectation
+\begin{equation}
+\begin{aligned} & \int q_{\phi}(z\mid x)\log\frac{q_{\phi}(z\mid x)}{p_{\theta}(z,x)}dz\\
+ & =\mathbb{E}_{z\sim Q_{\phi(Z\mid X)}}\left[\log\frac{q_{\phi}(z\mid x)}{p_{\theta}(z,x)}\right]\\
+ & =\mathbb{E}_{z\sim Q_{\phi(Z\mid X)}}\left[\log\frac{q_{\phi}(z\mid x)}{p_{\theta}(x\mid z)p_{\theta}(z)}\right]\\
+ & =\mathbb{E}_{Q}\left[\log q_{\phi}(z\mid x)-\log p_{\theta}(x\mid z)-\log p_{\theta}(z)\right].
+\end{aligned}
+\label{eq:var_exp}
+\end{equation}
+We rewrite \eqref{eq:var_kl_derive} and substitute \eqref{eq:var_exp}
+\begin{equation}
+\begin{aligned}Q_{\phi} & =\underset{\phi}{argmin\,}D_{KL}(Q_{\phi}\rVert P_{\theta})\\
+ & =\underset{\phi}{argmin\,}\int q_{\phi}(z\mid x)\log\frac{q_{\phi}(z\mid x)}{p_{\theta}(z,x)}dz\\
+ & =\underset{\phi}{argmin\,}\mathbb{E}_{Q}\left[\log q_{\phi}(z\mid x)-\log p_{\theta}(x\mid z)-\log p_{\theta}(z)\right]\\
+ & =\underset{\phi}{argmax\,}\mathbb{E}_{Q}\left[-\log q_{\phi}(z\mid x)+\log p_{\theta}(x\mid z)+\log p_{\theta}(z)\right]\\
+ & =\underset{\phi}{argmax\,}\mathbb{E}_{Q}\left[\log\frac{p_{\theta}(z)}{q_{\phi}(z\mid x)}+\log p_{\theta}(x\mid z)\right]\\
+ & =\underset{\phi}{argmax\,}\mathcal{L}(\phi).
+\end{aligned}
+\end{equation}
+
+\noindent Note, if the terms $p_{\theta}(z)$, $p_{\theta}(x\mid z)$
+and $q_{\phi}(z\mid x)$ are tractable, then $\mathcal{L}(\phi)$
+is comutationally tractable. We can further rewite $\mathcal{L}(\phi)$
+into it's commonly used form
+
+\begin{equation}
+\begin{aligned}\mathcal{L}(\phi) & =\mathbb{E}_{Q}\left[\log\frac{p_{\theta}(z)}{q_{\phi}(z\mid x)}+\log p_{\theta}(x\mid z)\right]\\
+ & =\mathbb{E}_{Q}\left[\log\frac{p_{\theta}(z)}{q_{\phi}(z\mid x)}\right]+\mathbb{E}_{Q}\left[\log p_{\theta}(x\mid z)\right]\\
+ & =\mathbb{E}_{Q}\left[\log p_{\theta}(x\mid z)\right]-\mathbb{E}_{Q}\left[\log\frac{q_{\phi}(z\mid x)}{p_{\theta}(z)}\right]\\
+ & =\mathbb{E}_{Q}\left[\log p_{\theta}(x\mid z)\right]-D_{KL}\left(q_{\phi}(z\mid x)\rVert p_{\theta}(z)\right).
+\end{aligned}
+\label{eq:var_elbo}
+\end{equation}
+
+\noindent In the literature, $\mathcal{L}(\phi)$ is referred to as
+\textit{variational lower bound}. In fact, the derived expression
+is a lower bound on evidence $\log p_{\theta}(x)$ by combining \eqref{eq:var_elbo}
+and \eqref{eq:var_kl_derive}
+
+\begin{equation}
+\begin{aligned}\log p_{\theta}(x)-\mathcal{L}(\phi) & =D_{KL}(Q_{\phi}\rVert P_{\theta})\end{aligned}
+\end{equation}
+
+\noindent which by non-negativity of $D_{KL}(Q_{\phi}\rVert P_{\theta})$
+yields
+
+\begin{equation}
+\log p_{\theta}(x)\leq\mathcal{L}(\phi).
+\end{equation}
+
+\noindent Therefore, $\mathcal{L}(\phi)$ is also known as \textit{evidence
+lower bound} (ELBO). 
+\begin{lem}[Evidence Lower Bound (ELBO)]
+The variational lower bound for family $Q_{\phi}\in\mathcal{F}$
+and target $P_{\theta}$ is
+
+\begin{equation}
+\mathcal{L}(\phi)=\mathbb{E}_{Q}\left[\log p_{\theta}(x\mid z)\right]-D_{KL}\left(q_{\phi}(z\mid x)\rVert p_{\theta}(z)\right)\geq\log p_{\theta}(x).\label{eq:var_lower_bound}
+\end{equation}
+\end{lem}
+\begin{proof}
+\begin{equation}
+\begin{aligned}\log p_{\theta}(x) & =\log\int p_{\theta}(x\mid z)p_{\theta}(z)dz\\
+ & =\log\int p_{\theta}(x\mid z)p_{\theta}(z)\frac{q_{\phi}(z\mid x)}{q_{\phi}(z\mid x)}dz\\
+ & \geq\int q_{\phi}(z\mid x)\log\left(p_{\theta}(x\mid z)\frac{p_{\theta}(z)}{q_{\phi}(z\mid x)}\right)dz\\
+ & =\int q_{\phi}(z\mid x)\log\left(p_{\theta}(x\mid z)\right)dz\\
+ & -\int q_{\phi}(z\mid x)\log\left(\frac{p_{\theta}(z)}{q_{\phi}(z\mid x)}\right)dz\\
+ & =\mathbb{E}_{z\sim q_{\phi}(z\mid x)}\left[\log\left(p_{\theta}(x\mid z)\right)\right]\\
+ & -\mathbb{E}_{z\sim q_{\phi}(z\mid x)}\left[\log\left(\frac{p_{\theta}(z)}{q_{\phi}(z\mid x)}\right)\right]\\
+ & =\mathbb{E}_{Q}\left[\log\left(p_{\theta}(x\mid z)\right)\right]-D_{KL}\left(q_{\phi}(z\mid x)\lVert p_{\theta}(z)\right).
+\end{aligned}
+\label{eq:app_proof_elbo}
+\end{equation}
+In the first equality we use marginalization on $z$ and the fact
+that $z$ does not depend on $p_{\theta}(x)$. The second equaility
+holds trivially. The inequality is obtained by the Jensen inequality.
+Finally, we rewrite the terms by the definition of the Kullback-Leiber
+divergence $D_{KL}(\cdot\rVert\cdot)\geq0$.
+\end{proof}
+\noindent Note the formulation of $\mathcal{L}(\phi)$ in \eqref{eq:var_lower_bound}
+gives rise to an intuitive interpretation of the terms where $\mathbb{E}_{Q}\left[\log p_{\theta}(x\mid z)\right]$
+is the log-likelihood of a data-point $x$ under the true distribution
+(reconstruction term) and $D_{KL}\left(q_{\phi}(z\mid x)\rVert p_{\theta}(z)\right)$
+captures the distance between $q_{\phi}$ and $p_{\theta}$ at a specific
+data-point $x$ (regularization term).
+
+\subsection{Black-Box Variational Inference}
+
+Recall that in the Variational Inference we aim to maximize the ELBO
+
+\begin{equation}
+\mathcal{L}(\phi,\theta)=\mathbb{E}_{Q}\left[\log p_{\theta}(x\mid z)\right]-D_{KL}\left(q_{\phi}(z\mid x)\rVert p_{\theta}(z)\right)\geq\log p_{\theta}(x)
+\end{equation}
+
+\noindent over the space of all $q_{\phi}$. The ELBO satisfies
+\begin{equation}
+\log p_{\theta}(x)=D_{KL}(q_{\phi}(z\mid x)\rVert p_{\theta}(z\mid x))+\mathcal{L}(\phi,\theta).
+\end{equation}
+
+\noindent In order to optimize over $q_{\phi}(z\mid x)$ we maximize
+the ELBO over $\phi$ by gradient descent. Therefore, $q_{\phi}(z\mid x)$
+must be differentiable with respect to $\phi$. In contrast to traditional
+Variational Inference, we perform gradient descent jointly over both
+$\phi$ and $\theta$. This will have two effects: (1) Optimization
+over $\phi$ will ensure that the ELBO stays close to $\log p(x)$,
+(2) Optimization over $\theta$ will increase the lower bound and
+thus $\log p(x)$.
+
+To perform black-box variational inference, we need to compute the
+gradient on the ELBO
+
+\begin{equation}
+\nabla_{\theta,\phi}\mathbb{E}_{Q}\left[\log p_{\theta}(x,z)-\log q_{\phi}(z)\right].\label{eq:gradient}
+\end{equation}
+
+\noindent In most cases we cannot express the expectation with respect
+to $q_{\phi}$ in closed form. Instead, we may draw Monte-Carlo samples
+from $q_{\phi}$ to estimate the gradient by Ergodicity Theorem. For
+the gradient with respect to $p_{\theta}$ we change the order of
+gradient and expectation and estimate by Monte-Carlo
+
+\begin{equation}
+\mathbb{E}_{Q}\left[\nabla_{\theta}\log p_{\theta}(x,z)\right]\overset{MC}{\approx}\frac{1}{N}\sum_{i=1}^{N}\nabla_{\theta}\log p_{\theta}(x,z_{i}).
+\end{equation}
+
+\noindent However, for the gradient with respect to $q_{\phi}$ we
+cannot change expectation and gradient, since we are differentiating
+over the distribution of which we take the expectation
+
+\begin{equation}
+\nabla_{\phi}\mathbb{E}_{Q}\left[\log q_{\phi}(z)\right].\label{eq:issue_gradient_q}
+\end{equation}
+
+\noindent Therefore, we will introduce the so-called score function
+estimator \cite{DBLP:journals/corr/MnihG14}.
+\begin{lem}[Score function estimator]
+Let $p_{\theta}(x,z)$ and $q_{\phi}(z)$ denote densities. The score
+function estimator is
+\begin{align}
+\begin{aligned} & \nabla_{\phi}\mathbb{E}_{Q}\left[\log p_{\theta}(x,z)-\log q_{\phi}(z)\right]\\
+ & =\mathbb{E}_{Q}\left[\left(\log p_{\theta}(x,z)-\log q_{\phi}(z)\right)\nabla_{\phi}\log q_{\phi}(z)\right].
+\end{aligned}
+\label{eq:score}
+\end{align}
+\end{lem}
+\begin{proof}
+\begin{equation}
+\begin{aligned} & \nabla_{\phi}\mathcal{L}(x)=\nabla_{\phi}\mathbb{E}_{Q}\left[\log p_{\theta}(x,z)-\log q_{\phi}(z\mid x)\right]\\
+ & =\nabla_{\phi}\int q_{\phi}(z\mid x)\log p_{\theta}(x,z)dz\\
+ & -\nabla_{\phi}\int q_{\phi}(z\mid x)\log q_{\phi}(z\mid x)dz\\
+ & =\int\log p_{\theta}(x,z)\nabla_{\phi}q_{\phi}(z\mid x)dz\\
+ & -\int(\log q_{\phi}(z\mid x)+1)\nabla_{\phi}q_{\phi}(z\mid x)dz\\
+ & =\int\left(\log p_{\theta}(x,z)-\log q_{\phi}(z\mid x)\right)\nabla_{\phi}q_{\phi}(z\mid x)dz\\
+ & =\int\left(\log p_{\theta}(x,z)-\log q_{\phi}(z\mid x)\right)q_{\phi}(z\mid x)\nabla_{\phi}(z\mid x)dz\\
+ & =\mathbb{E_{Q}}\left[\left(\log p_{\theta}(x,z)-\log q_{\phi}(z\mid x)\right)\nabla_{\phi}(z\mid x)\right].
+\end{aligned}
+\label{eq:app_proof_score_gradient-1}
+\end{equation}
+\end{proof}
+\noindent Then identity \eqref{eq:score} places the gradient inside
+the expectation with respect to $q_{\phi}$. We may approximate \eqref{eq:gradient}
+by Monte-Carlo integration. Unfortunately, the score function estimator
+suffers from high variance which causes slow convergence to the true
+expectation. As a remedy \cite{journals/corr/KingmaW13} proposes
+an estimator with lower variance which arguable is the main contribution.
+The estimator is derived in two steps: (1) reformulate the ELBO such
+that terms of it can be derived as a closed-form solution (without
+Monte-Carlo integration), (2) the so-called reparameterization trick
+as an alternative gradient estimator.
+
+\subsection{Stochastic-Gradient Variational Bayes}
+
+Recall by Lemma 1 the ELBO can be formulated as
+
+\begin{equation}
+\log p_{\theta}(x)\geq\underbrace{\mathbb{E}_{Q}\left[\log p_{\theta}(x\mid z)\right]}_{(i)}-\underbrace{D_{KL}\left(q_{\phi}(z\mid x)\rVert p_{\theta}(z)\right)}_{(ii)}.\label{eq:ELBO2}
+\end{equation}
+
+\noindent Let $z\sim q_{\phi}(z\mid x)$ be a sample $z\in\mathcal{Z}$
+given a observation $x\in\mathcal{X}$. Then $z$ can be interpreted
+as a \textit{code} describing $x$. Hence we may call $q_{\phi}(z\mid x)$
+an \textit{encoder}. Under this regime we inspect the two terms in
+\eqref{eq:ELBO2}:
+
+In term $(i)$, we want to maximize the log-likelihood $\log p_{\theta}(x\mid z)$
+of observation $x$ given code $z$. If $p_{\theta}(x\mid z)$ assigns
+high probability to observations $x\in X_{n}$, then the log-likelihood
+is maximized. We can say $p_{\theta}(x\mid z)$ aims to reconstruct
+$x$ given code $z$ and we may call $p_{\theta}(x\mid z)$ the \textit{decoder}.
+Then term $(i)$ is referred to as the \textit{reconstruction error.}
+
+In term $(ii)$, we want to minimize the Kullback-Leiber divergence
+between $q_{\phi}(z\mid x)$ and prior $p_{\theta}(z)$. It encourages
+the codes $z$ to follow a certain distribution (e.g. unit Gaussian).
+This term is referred to as \textit{regularization term}.
+
+Finally, we can interpret our optimization objective as finding a
+$q_{\phi}(z\mid x)$ such that $x$ is encoded into a meaningful latent
+representation $z$ from which we are able to decode $x$ via $p_{\theta}(x\mid z)$.
+In a sense, this resembles traditional \textit{Auto-Encoders}. Therefore,
+we shall summarize the above derivations as a Bayesian formulation
+of an auto-encoding process which gives rise to it's name ``Auto-Encoding
+Variational Bayes''.
+
+\subsection{Reparametrization Trick}
+
+As we have seen earlier, maximizing the ELBO requires a good estimate
+of the gradient. \cite{journals/corr/KingmaW13} provides a low-variance
+gradient estimator based on the so-called \textit{reparametrization
+trick}. Assume we can express $q_{\phi}(z\mid x)$ as a two-step generative
+process: (1) Sample noise $\epsilon\sim p(\epsilon)$ from a simple
+distribution e.g. $\mathcal{N}(0,I)$, (2) apply a deterministic transformation
+$g_{\phi}(\epsilon,x)$ that shapes the random noise into an arbitrary
+distribution $z=g_{\phi}(\epsilon,x)$.
+
+As an example, we can apply this formulation to Gaussian random variables:
+
+\begin{equation}
+\begin{aligned}z & \sim q_{\mu,\sigma}(z)=\mathcal{N}(\mu,\sigma),\\
+z & =g_{\mu,\sigma}(\epsilon)=\mu+\epsilon\odot\sigma
+\end{aligned}
+\end{equation}
+
+where $\odot$ denotes the Hadamard product.
+
+Then we may change the order of expectation and gradient in \eqref{eq:issue_gradient_q}
+by applying this reformulation. More generally, for any $f$ it holds 
+
+\begin{equation}
+\begin{aligned}\nabla_{\phi}\mathbb{E}_{z\sim q_{\phi}(z\mid x)}\left[f(x,z)\right] & =\nabla_{\phi}\mathbb{E}_{\epsilon\sim p(\epsilon)}\left[f(x,g_{\phi}(z,\epsilon))\right]\\
+ & =\mathbb{E}_{\epsilon\sim p(\epsilon)}\left[\nabla_{\phi}f(x,g_{\phi}(z,\epsilon))\right]\\
+ & \overset{MC}{\approx}\frac{1}{N}\sum_{i=1}^{N}\nabla_{\phi}f(x,g_{\phi}(z,\epsilon)).
+\end{aligned}
+\end{equation}
+
+Finally, we may use Monte-Carlo integration to estimate the expectation
+of the gradient with low variance \cite{icml2014c2_rezende14}. 
+
+\subsection{Neural Networks}
+
+The AEVB algorithm combines (1) the auto-encoding ELBO reformulation,
+(2) the black-box variational inference, and (3) the low-variance
+gradient estimator based on the reparametrization-trick. As discussed
+earlier, it maximizes the auto-encoding ELBO using black-box variational
+inference with a reparameterized low-variance gradient estimator.
+As a constraint of this technique we must choose a model $p_{\theta}$
+that is differentiable in $\theta$.
+
+We take both $p$ and $q$ from the Gaussian family and parameterize
+them by Neural Networks
+
+\begin{align}
+\begin{aligned}p_{\theta}(z) & =\mathcal{N}(z;0,I),\\
+p_{\theta}(x\mid z) & =\mathcal{N}(z;\mu(z),\sigma(z)\odot I).
+\end{aligned}
+\end{align}
+
+Since we chose $p$ and $q$ as Normal distributions, the Kullback-Leibler
+divergence of the regularization term in the auto-encoding ELBO can
+be computed in closed-form. We may estimate the remaining reconstruction
+term by Monte-Carlo integration.
+
+The structure of the VAE as a end-to-end Neural Network consists of
+(1) an Inference network $g_{\phi}:x\rightarrow\lambda$ for approximate
+posterior $q_{\phi}(z\mid x,\lambda)$ and (2) a generator network
+$f_{\theta}:z\rightarrow\omega$ for data distribution $p_{\theta}(x\mid z,\omega)$.
+Recall, sampling can be performed in two steps: (1) draw samples from
+prior $z\sim p(z)$ and (2) apply the generator network as deterministic
+transformation. Note that we can omit the Inference network for this
+task.
+
+\section{Bounds}
+
+We will summarize recent theoretical results with respect to VAEs.
+These consists of (1) a proof of zero reconstruction error with arbitrarily
+powerful estimators in the one-dimensional case \cite{doersch2016tutorial}.
+
+\subsection{Approximation Error in 1D}
+
+As in \cite{doersch2016tutorial}, we claim that VAEs obtain a zero
+approximation error in 1D given arbitrarily powerful learners. Let
+$P(X)$ denote a 1D distribution which we wish to approximate by a
+VAE. We assume $P(X)\geq0,\,\forall X$ and $P(X)$ is infinitely
+differentiable and all derivatives are bounded. Recall a VAE maximized
+the ELBO \eqref{eq:var_elbo} and therefore optimizes
+
+\begin{equation}
+\log P_{\sigma}(X)-D_{KL}\left(Q_{\sigma}(z\mid X)\rVert P_{\sigma}(z\mid X)\right)
+\end{equation}
+
+where $P_{\sigma}(X\mid z)=\mathcal{N}(X\mid f(z),\sigma^{2})$ with
+$z\sim\mathcal{N}(0,1)$, $P_{\sigma}(X)=\int P_{\sigma}(X\mid z)P(z)dz$
+and $Q_{\sigma}(z\mid X)=\mathcal{N}(z\mid\mu_{\sigma}(X),\Sigma_{\sigma}(X))$. 
+
+Note the theoretical optimal solution is $P_{\sigma}=P$ and $D_{KL}\left(Q_{\sigma}(z\mid X)\rVert P_{\sigma}(z\mid X)\right)=0$.
+The term ``arbitrarily powerful learners'' refers to the case, that
+if there exists $(f,\mu,\Sigma)$ which achieve the best possible
+solution, then the learning algorithm will identify them. Therefore,
+we only have to show the existence of such solution.
+
+First, claim for $\sigma\rightarrow0$ we can describe $P(X)=\int\mathcal{N}(X\mid f(z),\sigma^{2})P(z)dz$
+arbitrarily well. Let $F$ denote the CDF of $P$ and let $G$ be
+the CDF of $\mathcal{N}(0,1)$. Then $G(z)\sim Unif(0,1)$ and thus
+$f(z)=F^{-1}(G(z))\sim P(X)$. As $\sigma\rightarrow0$ , then distribution
+$P(X)$ converges to $P$, which is our desired result.
+
+Second, we must show that $D_{KL}\left(Q_{\sigma}(z\mid X)\rVert P_{\sigma}(z\mid X)\right)\rightarrow0$
+as $\sigma\rightarrow0$ . Let $g(X)=G^{-1}(F(X))$ and let $Q_{\sigma}(z\mid X)=\mathcal{N}(z\mid g(X),(g'(X)\cdot\sigma)^{2})$.
+Observe invariance of $D_{KL}\left(Q_{\sigma}(z\mid X)\rVert P_{\sigma}(z\mid X)\right)$
+to affine transformations of the sample space. Hence, denote $Q^{0}(z^{0}\mid X)=\mathcal{N}(z^{0}\mid g(X),g'(X)^{2})$.
+Then
+\begin{equation}
+D_{KL}\left(Q_{\sigma}(z\mid X)\rVert P_{\sigma}(z\mid X\right)=D_{KL}\left(Q^{0}(z^{0}\mid X)\rVert P_{\sigma}^{0}(z^{0}\mid X)\right)
+\end{equation}
+
+where $Q^{0}(z^{0}\mid X)$ does not depend on $\sigma$. Hence, it
+is sifficient to show that $P_{\sigma}^{0}(z^{0}\mid X)\rightarrow Q^{0}(z^{0}\mid X),\,\forall z$.
+Let $r=g(X)+(z^{0}-g(X))\cdot\sigma$. Then
+
+\begin{equation}
+\begin{aligned}P_{\sigma}^{0}(z^{0}\mid X) & =P_{\sigma}(z=r\mid X=X)\cdot\sigma\\
+ & =\frac{P_{\sigma}(X=X\mid z=r)\cdot P(z=r)\cdot\sigma}{P_{\sigma}(X=X)}.
+\end{aligned}
+\end{equation}
+
+Observe, $P_{\sigma}(X)\rightarrow P(X)$ as $\sigma\rightarrow0$,
+which is a constant. And, $r\rightarrow g(X)$ as $\sigma\rightarrow0$
+also tends to be a constant. Combine both in constant $C$. Together
+$(C,\sigma)$ ensure that the distribution is normalized. 
+\begin{equation}
+=C\cdot\mathcal{N}(X\mid f(g(X))+(z^{0}-g(X))\cdot\sigma),\sigma^{2}).\label{eq:proof_C}
+\end{equation}
+
+Then apply Taylor expansion of $f$ around $g(X)$ on \eqref{eq:proof_C}
+
+\begin{equation}
+\begin{aligned}= & C\cdot\mathcal{N}(X\mid X+f'(g(X))\cdot(z^{0}-g(X))\cdot\sigma\\
+ & +\sum_{n=2}^{\infty}\frac{1}{n!}\left(f^{(n)}(g(X))((z^{0}-g(X))\cdot\sigma\right)^{n},\sigma^{2})
+\end{aligned}
+\label{eq:proof_taylor}
+\end{equation}
+
+Recall $\mathcal{N}(X\mid\mu,\sigma)=(\sqrt{2\pi\sigma})^{-1}\exp\left(-\frac{1}{2\sigma^{2}}(x-\mu)^{2}\right)$.
+Rewrite \eqref{eq:proof_taylor} as Gaussian
+
+\begin{equation}
+\begin{aligned}= & \frac{C\cdot f'(g(X))}{\sigma}\cdot\mathcal{N}(z^{0}\mid g(X)\\
+ & -\sum_{n=2}^{\infty}\frac{\left(f^{(n)}(g(X))((z^{0}-g(X))\cdot\sigma\right)^{n}}{n!\cdot f'(g(X))\cdot\sigma},\\
+ & f'(g(X))^{-2}).
+\end{aligned}
+\label{eq:proof_taylor2}
+\end{equation}
+
+Note $f=g^{-1},$ that is $f'(g(X))^{-1}=g'(X)$. Further, as stated
+earlier, since $f^{(n)}$ is bounded for all $n$, all terms in the
+sum tend to 0 as $\sigma\rightarrow0$. Recall, $C$ must make the
+distribution normalize, so we have
+\begin{equation}
+\eqref{eq:proof_taylor2}\rightarrow\mathcal{N}(z^{0}\mid g(X),g'(X)^{2})=Q^{0}(z^{0}\mid X).
+\end{equation}
+
+\begin{flushright}
+\qedsymbol
+\par\end{flushright}
+
+\section{Conclusion}
+
+We introduced VAEs as a means to train latent variable models in high-dimensional
+spaces. Following \cite{journals/corr/KingmaW13}, we treat VAEs as
+an instantiation of the Auto-Encoding Variational Bayes (AEVB) algorithm
+with neural networks as reparameterization. We may interpret VAEs
+as a directed latent-variable probabilistic graphical models. We may
+also view it as a particular objective for training an auto-encoder
+neural network. Unlike previous techniques, this objective derives
+reconstruction and regularization terms from a more principled, Bayesian
+perspective. As in prior work, we can still interpret the Kullback-Leibler
+divergence term as a regularizer, and the expected likelihood term
+as a reconstruction loss. But the probabilistic model approach emphasis
+why these terms exist: to minimize the Kullback-Leibler divergence
+between the approximate variational posterior $q_{\phi}(z\vert x)$
+and model posterior $p_{\theta}(z\vert x)$.
+
+\bibliographystyle{plain}
+\bibliography{\jobname} 
+
+\end{document}
