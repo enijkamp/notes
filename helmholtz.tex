@@ -1,0 +1,135 @@
+\documentclass[11pt]{article}
+
+\usepackage{geometry}
+\geometry{letterpaper}                   
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{filecontents}
+\begin{filecontents}{\jobname.bib}
+@article{DayanHintonNealEtAl95,
+	added-at = {2008-09-16T23:39:07.000+0200},
+	author = {Dayan, P. and Hinton, G. E. and Neal, R. N. and Zemel, R. S.},
+	biburl = {https://www.bibsonomy.org/bibtex/24281c31a103bbfae44780a02d1451c5f/brian.mingus},
+	description = {CCNLab BibTeX},
+	interhash = {37d039e0dd8aad4509c9738ccd638fe7},
+	intrahash = {4281c31a103bbfae44780a02d1451c5f},
+	journal = {Neural Computation},
+	keywords = {nnets},
+	pages = {889-904},
+	timestamp = {2008-09-16T23:39:46.000+0200},
+	title = {The {Helmholtz} Machine},
+	volume = 7,
+	year = 1995
+}
+\end{filecontents}
+
+\def\E{\mathcal{E}}
+\def\F{\mathcal{F}}
+
+\begin{document}
+\begin{center}
+{\huge On Helmholtz Machines} 
+\end{center}
+
+The Helmholtz machine \cite{DayanHintonNealEtAl95} is a generative model that consists of two networks, a bottom-up recognition network that takes the data as input and produces a distribution over hidden variables (inference), and a top-down generative network that maps values of the hidden variables to the data space (generation). In an unsupervised learning regime, the wake-sleep algorithm may be used for training.
+
+\section{Variational Inference}
+
+Suppose we have a generative model of some data $x$ characterized by some hidden variables $z$ and parameters $\theta$. The log likelihood function can be written as:
+
+\begin{equation}
+\log p_\theta(x) = \log \int p_\theta(x, z) dz = \log \int p_\theta(x \mid z) p_\theta(z) dz.
+\end{equation}
+
+Equivalently, we can express the above in terms of an energy function:
+
+\begin{equation}
+\mathcal{E}_z= -\log p_\theta(x, z).
+\label{eq:energy}
+\end{equation} 
+
+In terms of the energy function, we can write the posterior of $z$ given $x$ as:
+
+\begin{equation}
+P_z = p(z\mid x,\theta) = \frac{p_\theta(x, z)}{\int p_\theta(x, z') dz'}  = \frac{\exp(-\E_z)}{\int \exp(-\E_{z'}) dz'} .
+\end{equation} 
+
+This is known as the Boltzmann distribution. The denominator is known as the partition function $Z = \int \exp(-\mathcal{E}_{z}) dz$. We can express $Z$ in terms of $\mathcal{E}_z$ and $P_z$ as $Z = \frac{\exp(-\mathcal{E}_z)}{P_z}$. Then:
+
+\begin{equation}
+\log Z =  \log \left[ \frac{\exp(-\E_z)}{P_z} \right] = -\E_z -\log P_z
+\label{eq:logz}
+\end{equation}
+
+which holds for all $z$. Equation (\ref{eq:logz}) also holds if we take the expectation with respect to $P_z$:
+
+\begin{equation}
+\log Z =  \left\langle -\E_z - \log P_z \right\rangle_{P_z}
+\end{equation}
+
+where the left hand-side is identical since it does not depend on $z$.
+
+In fact, since taking the expectation of the left-hand side of (\ref{eq:logz}) has no effect, we can do this for any arbitrary distribution $Q_z$ over $z$. Then:
+
+\begin{equation}
+\log Z =  \left\langle -\E_z - \log P_z \right\rangle_{Q_z} = \underbrace{-\int Q_z \E_z dz - \int Q_z \log Q_z}_{-\F(\E, Q)}) + \underbrace{\int Q_z \log \frac{Q_z}{P_z}}_{KL(Q,P)}.
+\label{eq:logz2}
+\end{equation}
+
+This equation gives us a prescription for obtaining the $Q$ that approximates $P$ best. Note, the left-hand side of (\ref{eq:logz2}), $\log Z$ , is independent of $Q$, it is just the marginal log likelihood of the data. The second term on right,is the Kullback-Leibler divergence $KL(Q,P) > 0$ between $Q$ and $P$, which we know is non-negative. ideally, we want to minimize $KL(Q,P)$ as much as possible. (\ref{eq:logz2}) suggests that we can minimize $KL(Q,P)$ by maximizing the Helmholtz free energy $-\F(\E,Q)$. Since the terms $KL(Q,P)$ and $-\F(E,Q)$ add up to the constant $\log Z$, maximizing $-\F(E,Q)$, necessarily minimizes $KL(Q,P)$.
+
+\section{Helmholtz Machine}
+
+The Helmholtz machine is a particular instantiation of the variational inference framework described above. It is a traditional neural network, in the sense that it has an input layer and a number of stacked hidden layers on top of each other. However, the consecutive layers are connected through both feedforward and feedback connections. The feedforwared connections are also known as recognition weights and the feedback connections are known as generative weights.
+
+Recall, we need to calculate the Helmholtz free energy $\F(\E,Q)$ where $\E$ is the energy function and $Q$ is the approximative posterior. To make this calculation tractable, we are going to assume that $Q$ is a separable distribution in each layer. In other words, given the activities of all units in layer $l$, the units in layer $l+1$ are conditionally independent. More specifically, $Q_z$ takes the following form:
+
+\begin{equation}
+Q_z = \prod_{l>1} \prod_{j} [q_j^l(\phi,s^{l-1})]^{s_j^l} [1-q_j^l (\phi,s^{l-1})]^{s_j^l}
+\end{equation}
+
+where $s_j^l$ denotes the binary stochastic activity of the $j$-th unit in the $l$=th layer, $s^l$ is the vector of activities of all units in the $l$-th layer and $q_j^l$ is the probability of being active for the $j$-th neuron in the $l$-th layer:
+
+\begin{equation}
+q_j^l(\phi,s^{l-1}) = \sigma\left(\sum_i s_i^{l-1} \phi_{i,j}^{l-1,l} \right)
+\end{equation}
+
+where $\sigma(\cdot)$ denotes the sigmoid function and $\phi_{i,j}^{l-1,l}$ is the feedforward (recognition) weight between the $i$-th unit in layer $l-1$ and the $j$-th unit in layer $l$. In practive, \cite{DayanHintonNealEtAl95} use an approximation where the stochastic activies $s_j^l$ are replaced by their means $q_j^l$, as in mean field models:
+
+\begin{equation}
+q_j^l(\phi, q^{l-1}) = \sigma\left( \sum_i q_i^{l-1} \phi_{i,j}^{l-1,l} \right).
+\label{eq:mean}
+\end{equation}
+
+We make a similar separability assumption for the joint distribution $p_\theta(x,z)$ that determines the energy function $\E_z$ (\ref{eq:energy}):
+
+\begin{equation}
+p_\theta(x,z) = \prod_{l\geq 1}\prod_j [ p_j^l(\theta,s^{l-1}) ]^{s_j^l} [1-p_j^l(\theta,s^{l-1})]^{s_j^l}
+\end{equation}
+
+where $p_j^l$ is the activation probability of the $j$-th unit in the $l$-th layer in the generative model for which a mean-field type approximation similar to the one used for $q_j^l$ above:
+
+\begin{equation}
+p_j^l(\theta,q^{l+1}) = \left(1-\frac{1}{1+\sum_k q_k^{l+1} \theta_{k,j}^{l+1,l}} \right) \left( 1-\prod_k \left[ 1 - q_k^{l+1} \frac{\theta_{k,j}^{l+1,l}}{1+\theta_{k,j}^{l+1,l}} \right] \right).
+\label{eq:mean_p}
+\end{equation}
+
+It turns out that the obvious analogue of (\ref{eq:mean}) for $p_j^l$ does not work well in practice due to local minima. Hence, (\ref{mean_p}) is a remedy to escape local minima.
+
+The first layer activations $q^1$ constitue the data $x$ in the model. With this factorized approximation of $p_\theta(x,z)$, we can write $-\F(\E, Q)$ as:
+
+\begin{equation}
+-\F(\E, Q) 
+= \left\langle -\E_z-\log Q_z \right\rangle_{Q_z}
+\propto \sum_x\sum_l\sum_j q_j^l \log \frac{q_l^l}{p_j^l}+(1-q_j^l) \log\frac{1-q_j^l}{1-p_j^l}
+\end{equation}
+
+where $q_j^l$ and $p_j^l$ are given by (\ref{eq:mean}) and (\ref{eq:mean_p}), respectively, and the sum over $x$ represents an average over the data. The derivatives of $\F(\E, Q)$ with respect the recognition and generative weights, $\phi$ and $\theta$, can be easily calculated using the chain rule and are given in the Appendix of \cite{DayanHintonNealEtAl95}.
+
+
+\bibliographystyle{plain}
+\bibliography{\jobname} 
+
+\end{document}
