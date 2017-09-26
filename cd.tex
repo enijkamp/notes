@@ -42,8 +42,9 @@
 \end{filecontents}
 
 \begin{document}
+	
 \begin{center}
-{\huge On Contrastive Divergence} 
+{\LARGE On Contrastive Divergence} 
 \end{center}
 
 Contrastive Divergence (CD) is an approximative Maximum Likelihood (ML) learning algorithm proposed by Geoffrey Hinton \cite{Hinton:2002, carreiraperpinan:2005}.
@@ -131,10 +132,10 @@ p_\theta(x) = \frac{1}{Z(\theta)} f_\theta(x)
 where $Z(\theta)$, known as the normalizing constant or partition function is defined as
 
 \begin{equation}
-Z(\theta) = \int f_\theta(x) dx
+Z(\theta) = \int f_\theta(x) dx.
 \end{equation}
 
-and $\mathcal{E}_\theta(x)$ denotes the energy function. Maximum Likelihood (ML) learning of parameters $\theta$ given i.i.d. samples $X=\{x_1,\ldots,x_N\}$ may be done by gradient ascent:
+Maximum Likelihood (ML) learning of parameters $\theta$ given i.i.d. samples $X=\{x_1,\ldots,x_N\}$ may be done by gradient ascent:
 
 \begin{equation}
 \theta^{(\tau+1)} = \theta^{(\tau)} + \eta \frac{\partial\mathcal{L}(\theta)}{\partial \theta} \bigg\vert_{\theta^{(\tau)}}

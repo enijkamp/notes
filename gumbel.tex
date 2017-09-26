@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+
+\usepackage{geometry}
+\geometry{letterpaper}                   
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{filecontents}
+
+\def\E{\mathbb{E}}
+\def\eps{\epsilon}
+
+\begin{filecontents}{\jobname.bib}
+@article{KingmaW13,
+	added-at = {2014-01-06T00:00:00.000+0100},
+	author = {Kingma, Diederik P. and Welling, Max},
+	biburl = {https://www.bibsonomy.org/bibtex/2486ad13a443259d137cb57be1dc77002/dblp},
+	ee = {http://arxiv.org/abs/1312.6114},
+	interhash = {85731e0fbdb10b8543ea9f55301b37a5},
+	intrahash = {486ad13a443259d137cb57be1dc77002},
+	journal = {CoRR},
+	keywords = {dblp},
+	timestamp = {2014-01-07T11:34:31.000+0100},
+	title = {Auto-Encoding Variational Bayes.},
+	url = {http://dblp.uni-trier.de/db/journals/corr/corr1312.html#KingmaW13},
+	volume = {abs/1312.6114},
+	year = 2013
+}
+\end{filecontents}
+
+\begin{document}
+
+\begin{center}
+	{\LARGE On the Gumbel-Softmax Trick\\[6pt] for Inference of Discrete Variables} 
+\end{center}
+
+The reparameterization trick enables optimizing stochastic computation graphs via gradient descent. The essence of the trick is to refactor each stochastic node into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule through the graph are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such reparameterizations, discrete random variables lack useful reparameterizations due to the discontinuous nature of discrete states. As a remedy, the concrete distribution serves as a continuous relaxation of discrete random variables.
+
+\section{Reparameterization Trick}
+
+The law of the unconscious statistician states (LOTUS) states that for a random variable $\eps$ with pdf $f_X$ and a measurable function $g$, it holds:
+
+\begin{equation}
+\E(g(\eps)) = \int g(X) d F_\eps(x).
+\end{equation}
+
+In other words, to compute the expectation of $z = g(\eps)$ we only need to know the mapping $g$ and the distribution of $\epsilon$, but we do not need the explicit distribution of $z$
+
+\begin{equation}
+\E_{\eps\sim p(\eps)}(g(\eps)) = \E_{z\sim p(z)}(z).
+\end{equation}
+
+Further, suppose $z$ has a distribution that depends on a parameter $\phi$, i.e. $z\sim p_\phi (z)$. Moreover, assume one can express $z = g(\eps, \phi)$ for known function $g$ and a certain noise distribution, e.g. $\eps\sim\mathcal{N}(0,1)$. Then LOTUS states that for any measurable function $f$:
+
+\begin{equation}
+\E_{z\sim p_\phi (z)}(f(z)) = \E_\eps\sim p(\eps)(f(g(\eps,\phi))).
+\end{equation}
+
+Now, in black-box variational inference formulations we encounter the gradient of some expectation with respect to a parameter $\phi$ and use the following equality:
+
+\begin{equation}
+\nabla_\phi\E_{z\sim p(z)} = \nabla_\phi\E_{\eps\sim p(\eps)}(f(g(\eps,\phi))) = \E_{\eps\sim p(\eps)}(\nabla f(g(\eps,\phi))).
+\end{equation}
+
+
+\bibliographystyle{plain}
+\bibliography{\jobname} 
+
+\end{document}
