@@ -1,0 +1,72 @@
+\documentclass[11pt]{article}
+
+\usepackage{geometry}
+\geometry{letterpaper}                   
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{filecontents}
+
+\begin{filecontents}{\jobname.bib}
+\end{filecontents}
+
+\def\E{\mathcal{E}}
+\def\F{\mathcal{F}}
+
+\begin{document}
+\begin{center}
+{\huge On Exponential Tilting} 
+\end{center}
+
+In Monte Carlo estimation, exponential tilting is a distribution shifting technique used in rare-event simulation, rejection and importance sampling.
+
+\section{Exponential Tilting}
+
+Given a random variable $X$ with probability distribution $P$, density $f$, and m.g.f. $M_X(\theta) = E[e^{\theta X}] < \infty$, the exponentially titled measure $P_\theta$ is:
+
+\begin{equation}
+P_theta(X \in dx) = \frac{E[e^{\theta X}1[X\in dx]]}{M_X (\theta)} = e^{\theta x - \kappa{\theta}} P(X \in dx)
+\end{equation}
+
+where $\kappa(\theta)$ is the c.g.f. $\log E[e^{\theta X}]$. Then $P_\theta$ has density
+
+\begin{equation}
+f_\theta(x) = \frac{e^{\theta x}f(x)}{M_X(\theta)}=\exp\{\theta x - \kappa(\theta) \}f(x).
+\end{equation}
+
+\section{Esscher Transform}
+
+Let $f(x)$ be a probability density. Then its Esscher transform is:
+
+\begin{equation}
+f_h(x) = \frac{ e^{hx}f(x) }{ \int_{-\infty}^{\infty} e^{hx}f(x)dx }
+\end{equation}
+
+The effect of the Esscher transform on the normal distribution is a mean shifting:
+
+\begin{equation}
+E_h(\mathcal{N}(\mu,\sigma^2)) = \mathcal{N}(\mu+h\sigma^2,\sigma^2).
+\end{equation}
+
+\section{ReLU}
+
+Consider the distribution
+
+\begin{eqnarray}
+p_\theta(X) = \frac{1}{Z(\theta)} \exp\left[ f_\theta(X)\right] p_0(X)
+\label{eq:gibbs}
+\end{eqnarray}
+
+where $p_0$ is Gaussian noise as reference distribution and $Z(\theta)$ denotes the partition function
+
+\begin{eqnarray}
+Z(\theta) = \int\exp[f_\theta(X)]p_0(X)dX.
+\end{eqnarray}
+
+Then $p_\theta(Y)$ is an exponential tilting of $p_0$. In the trivial case of $f_\theta(X)=\theta X$, equation (\ref{eq:gibbs}) is a Gibbs distribution and the effect of exponential tilting on $p_0(Y)\sim\mathcal{N}(\mu,\sigma^2)$ reduces to mean shifting $p_\theta(X)\sim\mathcal{N}(\mu+\theta \sigma^2,\sigma^2)$. If $f_\theta(X)$ is a ConvNet with piecewise linear rectification, then $f_\theta(X)$ is piecewise linear in $X$, and $p_\theta$ is piecewise mean shifted Gaussian. 
+
+\bibliographystyle{plain}
+\bibliography{\jobname} 
+
+\end{document}
