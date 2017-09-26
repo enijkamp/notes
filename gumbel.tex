@@ -1,11 +1,13 @@
 \documentclass[11pt]{article}
-                
+
+\usepackage[letterpaper, margin=2in]{geometry}
 \usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage{epstopdf}
 \usepackage{amsmath}
 \usepackage{filecontents}
 
+\def\N{\mathcal{N}}
 \def\E{\mathbb{E}}
 \def\eps{\epsilon}
 
@@ -34,12 +36,14 @@
 \end{center}
 
 \begin{abstract}
-The re-parameterization trick enables optimizing stochastic computation graphs via gradient descent. The essence of the trick is to re-factor each stochastic node into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule through the graph are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such re-parameterizations, discrete random variables lack useful re-parameterizations due to the discontinuous nature of discrete states. As a remedy, the concrete distribution serves as a continuous relaxation of discrete random variables.
+The reparameterization trick enables optimizing stochastic computation graphs via gradient descent. The essence of the trick is to re-factor each stochastic node into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule through the graph are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such re-parameterizations, discrete random variables lack useful reparameterizations due to the discontinuous nature of discrete states. As a remedy, the gumbel soft-max trick (or concrete distribution) serves as a continuous relaxation of discrete random variables.
 \end{abstract}
 
 \section{Reparameterization Trick}
 
-The law of the unconscious statistician states (LOTUS) states that for a random variable $\eps$ with pdf $f_X$ and a measurable function $g$, it holds:
+Let us shed some light on the reparameterization trick used by Kingma and Welling \cite{KingmaW13} to train their variational auto-encoders.\\
+
+First, the law of the unconscious statistician states (LOTUS) states that for a random variable $\eps$ with pdf $f_\eps$ and a measurable function $g$, it holds:
 
 \begin{equation}
 \E(g(\eps)) = \int g(X) d F_\eps(x).
@@ -57,23 +61,69 @@ Now, suppose $z$ has a distribution that depends on a parameter $\phi$, i.e. $z\
 \E_{z\sim p_\phi (z)}(f(z)) = \E_\eps\sim p(\eps)(f(g(\eps,\phi))).
 \end{equation}
 
-In black-box variational inference formulations we encounter the gradient of some expectation with respect to a parameter $\phi$ and use the following equality:
+In black-box variational inference formulations we encounter the gradient of some expectation with respect to a parameter $\phi$ and may use the following equality:
 
 \begin{equation}
-\nabla_\phi\E_{z\sim p(z)} = \nabla_\phi\E_{\eps\sim p(\eps)}(f(g(\eps,\phi))) = \E_{\eps\sim p(\eps)}(\nabla f(g(\eps,\phi))).
+\nabla_\phi\E_{z\sim p(z)} = \nabla_\phi\E_{\eps\sim p(\eps)}(f(g(\eps,\phi))) = \E_{\eps\sim p(\eps)}(\nabla_\phi f(g(\eps,\phi))).
 \end{equation}
 
 Further, we have conveniently expressed $z$ so that expectations of functions of $z$ can be expressed as integrals with respect to a density that does not depend on the parameter. Therefore, we can exchange the expectation and gradient.
 
-Finally, the re-parameterization gives rise to an unbiased estimate of the above gradient via MCMC:
+Finally, the reparameterization gives rise to an unbiased estimate of the above gradient via MCMC:
 
 \begin{equation}
-\nabla_\phi\E_{z\sim p(z)} \approx \frac{1}{N} \sum_{i=1}^N \nabla f(g(\eps_i, \phi)).
+\nabla_\phi\E_{z\sim p(z)} \approx \frac{1}{N} \sum_{i=1}^N \nabla_\phi f(g(\eps_i, \phi)).
 \end{equation}
 
-For reasons not yet completely understood, empirically it is seen this re-parameterization based estimate of the gradient exhibits much less variance than competing estimators.
+For reasons not yet completely understood, empirically it is seen that this reparameterization based estimate of the gradient exhibits much less variance than competing estimators.
+
+Let us look at an example. Assume we have a normal distribution $q$ parameterized by $\phi$, specifically $q_\phi(x) = \N(\phi,1)$. We want to solve:
+
+\begin{equation}
+\phi^* = \underset{\phi}{\arg\min} \, \E_q(x^2).
+\end{equation}
+
+First, we calculate $\nabla_\phi\E_q(x^2)$ as
+
+\begin{align}
+\nabla_\phi\E_q(x^2)
+&= \nabla_\phi \int q_\phi(x)x^2dx\\
+&= \int x^2 \nabla_\phi q_\phi(x)\frac{q_\phi(x)}{q_\phi(x)}dx\\
+&= \int q_\phi(x)\nabla_\phi\log q_\phi(x)x^2dx\\
+&= \E_q(x^2 \nabla_\phi \log q_\phi(x)).
+\end{align}
+
+For $q_\phi(x) = \N(\phi,1)$, this method gives
+
+\begin{equation}
+\nabla_\phi\E_q(x^2) = \E_q(x^2(x-\phi)).
+\label{eq:est1}
+\end{equation}
+
+Second, we use the reparameterization to factor out the stochastic element in $q$ and make it independent of $\phi$:
+
+\begin{equation}
+x=\phi + \eps,\quad \eps\sim\N(0,1)
+\end{equation}
+
+Then
+
+\begin{equation}
+\nabla_\phi\E_q(x^2) = \E_p((\phi+\eps)^2).
+\end{equation}
+
+where $p=\N(0,1)$ and $\eps\sim p(\eps)$. Now, the expectation is independent of $\phi$ and we rewrite the gradient:
+
+\begin{equation}
+\nabla_\phi\E_q(x^2) = \nabla_\phi \E_p((\phi+\eps)^2) = \E_p(2(\phi+\eps)).
+\label{eq:est2}
+\end{equation}
+
+Finally, note that empirically the variance of estimator (\ref{eq:est2}) is an order of magnitude lower compared to (\ref{eq:est1}).
 
 \section{Variational Inference}
+
+
 
 \bibliographystyle{plain}
 \bibliography{\jobname} 
