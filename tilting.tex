@@ -26,7 +26,7 @@ In Monte Carlo estimation, exponential tilting is a distribution shifting techni
 Given a random variable $X$ with probability distribution $P$, density $f$, and m.g.f. $M_X(\theta) = E[e^{\theta X}] < \infty$, the exponentially titled measure $P_\theta$ is:
 
 \begin{equation}
-P_\theta(X \in dx) = \frac{E[e^{\theta X}1[X\in dx]]}{M_X (\theta)} = e^{\theta x - \kappa{\theta}} P(X \in dx)
+P_\theta(X \in dx) = \frac{E[e^{\theta X}1[X\in dx]]}{M_X (\theta)} = e^{\theta x - \kappa(\theta)} P(X \in dx)
 \end{equation}
 
 where $\kappa(\theta)$ is the c.g.f. $\log E[e^{\theta X}]$. Then $P_\theta$ has density
@@ -40,18 +40,18 @@ f_\theta(x) = \frac{e^{\theta x}f(x)}{M_X(\theta)}=\exp\{\theta x - \kappa(\thet
 Let $f(x)$ be a probability density. Then its Esscher transform is:
 
 \begin{equation}
-f_h(x) = \frac{ e^{hx}f(x) }{ \int_{-\infty}^{\infty} e^{hx}f(x)dx }
+f_\theta(x) = \frac{ e^{\theta x}f(x) }{ \int_{-\infty}^{\infty} e^{\theta x}f(x)dx }
 \end{equation}
 
 The effect of the Esscher transform on the normal distribution is a mean shifting:
 
 \begin{equation}
-E_h(\mathcal{N}(\mu,\sigma^2)) = \mathcal{N}(\mu+h\sigma^2,\sigma^2).
+E_\theta(\mathcal{N}(\mu,\sigma^2)) = \mathcal{N}(\mu+\theta\sigma^2,\sigma^2).
 \end{equation}
 
 \section{ReLU}
 
-Consider the distribution
+Consider the distribution with parameters $\theta$:
 
 \begin{eqnarray}
 p_\theta(X) = \frac{1}{Z(\theta)} \exp\left[ f_\theta(X)\right] p_0(X)
