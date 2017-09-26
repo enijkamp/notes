@@ -3,5 +3,6 @@
 *.bib
 *.blg
 *.log
+*.out
 *.synctex.gz
 *.DS_Store
