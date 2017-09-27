@@ -2,8 +2,9 @@
 
 \usepackage[letterpaper, margin=2in]{geometry}
 \usepackage{graphicx}
-\usepackage{amssymb}
+\usepackage{url}
 \usepackage{epstopdf}
+\usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{filecontents}
 
@@ -56,6 +57,20 @@
 	url = {http://arxiv.org/abs/1611.01144},
 	year = 2016
 }
+@misc{casmls2017,
+	author = {Columbia Advanced Machine Learning Seminar},
+	title = {{The Gumbel-Softmax Trick for Inference of Discrete Variables}},
+	howpublished = "\url{https://casmls.github.io/general/2017/02/01/GumbelSoftmax.html}",
+	year = {2017}, 
+	note = "[Online; accessed 19-Sept-2017]"
+}
+@misc{jang2016,
+	author = {Eric Jang},
+	title = {{Tutorial: Categorical Variational Autoencoders using Gumbel-Softmax}},
+	howpublished = "\url{http://blog.evjang.com/2016/11/tutorial-categorical-variational.html}",
+	year = {2016}, 
+	note = "[Online; accessed 19-Sept-2017]"
+}
 \end{filecontents}
 
 \begin{document}
@@ -65,12 +80,10 @@
 \end{center}
 
 \begin{abstract}
-The reparameterization trick enables optimizing stochastic computation graphs via gradient descent \cite{KingmaW13}. The essence of the trick is to re-factor each stochastic node into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule through the graph are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such re-parameterizations, discrete random variables lack useful reparameterizations due to the discontinuous nature of discrete states. As a remedy, the gumbel soft-max trick \cite{jang2016categorical} or concrete distribution \cite{MaddisonMT16} serves as a continuous relaxation of discrete random variables.
+The reparameterization trick enables optimizing networks with stochastic units via gradient descent \cite{KingmaW13}. The essence of the trick is to re-factor each stochastic unit into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such re-parameterizations, discrete random variables lack useful reparameterizations due to the discontinuous nature of discrete states. As a remedy, the gumbel soft-max trick \cite{jang2016categorical} or concrete distribution \cite{MaddisonMT16} serves as a continuous relaxation of discrete random variables. See \cite{KingmaW13}, \cite{MaddisonMT16}, \cite{jang2016categorical}, \cite{casmls2017}, \cite{jang2016}.
 \end{abstract}
 
 \section{Reparameterization Trick}
-
-Let us shed some light on the reparameterization trick used by Kingma and Welling \cite{KingmaW13} to train their variational auto-encoders.\\
 
 First, the law of the unconscious statistician states (LOTUS) states that for a random variable $\eps$ with pdf $f_\eps$ and a measurable function $g$, it holds:
 \begin{equation}
@@ -145,9 +158,9 @@ We reparameterize $q_\phi(z\mid x)$ with respect to a noise distribution, $s(\ep
 \L_{\theta,\phi}(x) = \E_{\eps\sim s(\eps)}(\log(p_\theta(x,g_\phi(\eps))))-\log(q_\phi(g_\phi(\eps)).
 \end{equation}
 
-\section{Gumbel}
-
 Unfortunately, for discrete random variables we cannot apply the reparameterization trick directly: A non-dengenerate mapping from a continuous set onto a discrete set is not differentiable. That is, the functional relation $z = g_\phi(\eps)$, we can not conceive $\frac{\partial z}{\partial \phi}$. We can, however, construct alternative estimates of the gradient, that may not enjow the low-variance property of the reparameterization based ones.
+
+\section{Gumbel-Softmax Trick}
 
 The Gumbel-softmax trick \cite{jang2016categorical} is a remedy to overcome the inability of applying the reparameterization trick to discrete random variables. It relies on two insights: (1) the Gumbel distribution provides a nice parameterization for a discrete distribution, and (2) the corresponding non-continuous function can be made continuous by applying an approximation that depends on a temperature parameter, which in the zero-temperature case degenerates to the discontinuous, original expression.
 
