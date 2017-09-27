@@ -335,7 +335,7 @@ We are interested in three tasks (1) learning the parameters $\theta$
 of $p_{\theta}(\cdot)$, (2) approximative posterior inference over
 $z$ and (3) sampling $x\sim p_{\theta}(x\mid z)$ given $z$. Further,
 we will make the following additional assumptions: (A1) computing
-the posterior probability $p_{\theta}(x\mid z)$ is intractable, (A2)
+the posterior probability $p_{\theta}(z\mid x)$ is intractable, (A2)
 the cardinality $n$ of sample $X_{n}$ is exceeding the memory capacity.
 
 \subsection{Objective Function}
@@ -355,7 +355,7 @@ the objective is to maximize the log-likelihood of each $x\in X_{n}$
 \label{eq:log_like}
 \end{equation}
 
-Note, both computing posterior probability $p_{\theta}(x\mid z)$
+Note, both computing probability $p_{\theta}(x\mid z)$
 and integration over $z$ are intractable and therefore evidence $p_{\theta}(x)$
 is intractable. We shall later see that in the case of VAEs objective
 functions is equivalent to minimizing (1) the mean squared reconstruction

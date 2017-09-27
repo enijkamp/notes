@@ -8,6 +8,7 @@
 \usepackage{filecontents}
 
 \def\N{\mathcal{N}}
+\def\L{\mathcal{L}}
 \def\E{\mathbb{E}}
 \def\eps{\epsilon}
 
@@ -27,16 +28,44 @@
 	volume = {abs/1312.6114},
 	year = 2013
 }
+@article{MaddisonMT16,
+	author    = {Chris J. Maddison and
+		Andriy Mnih and
+		Yee Whye Teh},
+	title     = {The Concrete Distribution: {A} Continuous Relaxation of Discrete Random
+		Variables},
+	journal   = {CoRR},
+	volume    = {abs/1611.00712},
+	year      = {2016},
+	url       = {http://arxiv.org/abs/1611.00712},
+	timestamp = {Wed, 07 Jun 2017 14:41:41 +0200},
+	biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/MaddisonMT16},
+	bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+@misc{jang2016categorical,
+	added-at = {2017-03-20T09:53:49.000+0100},
+	author = {Jang, Eric and Gu, Shixiang and Poole, Ben},
+	biburl = {https://www.bibsonomy.org/bibtex/21b45b213a40f3498cc2ababb0d0be83b/suqbar},
+	description = {[1611.01144] Categorical Reparameterization with Gumbel-Softmax},
+	interhash = {157733069613834cff7c133ed27aae43},
+	intrahash = {1b45b213a40f3498cc2ababb0d0be83b},
+	keywords = {categorical gumbel-sofmax},
+	note = {cite arxiv:1611.01144},
+	timestamp = {2017-04-04T08:40:54.000+0200},
+	title = {Categorical Reparameterization with Gumbel-Softmax},
+	url = {http://arxiv.org/abs/1611.01144},
+	year = 2016
+}
 \end{filecontents}
 
 \begin{document}
 
 \begin{center}
-	{\LARGE On the Gumbel-Softmax Trick\\[6pt] for Inference of Discrete Variables} 
+{\LARGE On the Gumbel-Softmax Trick} 
 \end{center}
 
 \begin{abstract}
-The reparameterization trick enables optimizing stochastic computation graphs via gradient descent. The essence of the trick is to re-factor each stochastic node into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule through the graph are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such re-parameterizations, discrete random variables lack useful reparameterizations due to the discontinuous nature of discrete states. As a remedy, the gumbel soft-max trick (or concrete distribution) serves as a continuous relaxation of discrete random variables.
+The reparameterization trick enables optimizing stochastic computation graphs via gradient descent \cite{KingmaW13}. The essence of the trick is to re-factor each stochastic node into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule through the graph are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such re-parameterizations, discrete random variables lack useful reparameterizations due to the discontinuous nature of discrete states. As a remedy, the gumbel soft-max trick \cite{jang2016categorical} or concrete distribution \cite{MaddisonMT16} serves as a continuous relaxation of discrete random variables.
 \end{abstract}
 
 \section{Reparameterization Trick}
@@ -44,86 +73,124 @@ The reparameterization trick enables optimizing stochastic computation graphs vi
 Let us shed some light on the reparameterization trick used by Kingma and Welling \cite{KingmaW13} to train their variational auto-encoders.\\
 
 First, the law of the unconscious statistician states (LOTUS) states that for a random variable $\eps$ with pdf $f_\eps$ and a measurable function $g$, it holds:
-
 \begin{equation}
 \E(g(\eps)) = \int g(X) d F_\eps(x).
 \end{equation}
-
-In other words, to compute the expectation of $z = g(\eps)$ we only need to know the mapping $g$ and the distribution of $\epsilon$, but we do not need the explicit distribution of $z$
-
+In other words, to compute the expectation of $z = g(\eps)$ we only need to know the mapping $g$ and the distribution of $\epsilon$, but we do not need the explicit distribution of $z$:
 \begin{equation}
 \E_{\eps\sim p(\eps)}(g(\eps)) = \E_{z\sim p(z)}(z).
 \end{equation}
 
-Now, suppose $z$ has a distribution that depends on a parameter $\phi$, i.e. $z\sim p_\phi (z)$. Moreover, assume one can express $z = g(\eps, \phi)$ for known function $g$ and a certain noise distribution, e.g. $\eps\sim\mathcal{N}(0,1)$. Then LOTUS states that for any measurable function $f$:
-
+Now, suppose $z$ has a distribution that depends on a parameter $\phi$, i.e. $z\sim p_\phi (z)$. Moreover, assume one can express $z = g_\phi(\eps)$ for known function $g$ and a certain noise distribution, e.g. $\eps\sim\mathcal{N}(0,1)$. Then LOTUS states that for any measurable function $f$:
 \begin{equation}
-\E_{z\sim p_\phi (z)}(f(z)) = \E_\eps\sim p(\eps)(f(g(\eps,\phi))).
+\E_{z\sim p_\phi (z)}(f(z)) = \E_{\eps\sim p(\eps)}(f(g_\phi(\eps))).
 \end{equation}
 
-In black-box variational inference formulations we encounter the gradient of some expectation with respect to a parameter $\phi$ and may use the following equality:
-
+In auto-encoding variational bayes formulations we encounter the gradient of some expectation with respect to a parameter $\phi$ and may use the following equality:
 \begin{equation}
-\nabla_\phi\E_{z\sim p(z)} = \nabla_\phi\E_{\eps\sim p(\eps)}(f(g(\eps,\phi))) = \E_{\eps\sim p(\eps)}(\nabla_\phi f(g(\eps,\phi))).
+\nabla_\phi\E_{z\sim p(z)} = \nabla_\phi\E_{\eps\sim p(\eps)}(f(g_\phi(\eps))) = \E_{\eps\sim p(\eps)}(\nabla_\phi f(g_\phi(\eps))).
 \end{equation}
-
 Further, we have conveniently expressed $z$ so that expectations of functions of $z$ can be expressed as integrals with respect to a density that does not depend on the parameter. Therefore, we can exchange the expectation and gradient.
 
 Finally, the reparameterization gives rise to an unbiased estimate of the above gradient via MCMC:
-
 \begin{equation}
-\nabla_\phi\E_{z\sim p(z)} \approx \frac{1}{N} \sum_{i=1}^N \nabla_\phi f(g(\eps_i, \phi)).
+\nabla_\phi\E_{z\sim p(z)} \approx \frac{1}{N} \sum_{i=1}^N \nabla_\phi f(g_\phi(\eps_i)).
 \end{equation}
-
 For reasons not yet completely understood, empirically it is seen that this reparameterization based estimate of the gradient exhibits much less variance than competing estimators.
 
-Let us look at an example. Assume we have a normal distribution $q$ parameterized by $\phi$, specifically $q_\phi(x) = \N(\phi,1)$. We want to solve:
-
+Let us look at a trivial example. Assume we have a normal distribution $q$ parameterized by $\phi$, specifically $q_\phi(x) = \N(\phi,1)$. We want to solve:
 \begin{equation}
 \phi^* = \underset{\phi}{\arg\min} \, \E_q(x^2).
 \end{equation}
-
 First, we calculate $\nabla_\phi\E_q(x^2)$ as
-
 \begin{align}
 \nabla_\phi\E_q(x^2)
 &= \nabla_\phi \int q_\phi(x)x^2dx\\
 &= \int x^2 \nabla_\phi q_\phi(x)\frac{q_\phi(x)}{q_\phi(x)}dx\\
-&= \int q_\phi(x)\nabla_\phi\log q_\phi(x)x^2dx\\
+&= \int x^2 q_\phi(x)\nabla_\phi\log q_\phi(x)dx\\
 &= \E_q(x^2 \nabla_\phi \log q_\phi(x)).
 \end{align}
-
 For $q_\phi(x) = \N(\phi,1)$, this method gives
-
 \begin{equation}
 \nabla_\phi\E_q(x^2) = \E_q(x^2(x-\phi)).
 \label{eq:est1}
 \end{equation}
-
 Second, we use the reparameterization to factor out the stochastic element in $q$ and make it independent of $\phi$:
-
 \begin{equation}
 x=\phi + \eps,\quad \eps\sim\N(0,1)
 \end{equation}
-
 Then
-
 \begin{equation}
 \nabla_\phi\E_q(x^2) = \E_p((\phi+\eps)^2).
 \end{equation}
-
 where $p=\N(0,1)$ and $\eps\sim p(\eps)$. Now, the expectation is independent of $\phi$ and we rewrite the gradient:
-
 \begin{equation}
 \nabla_\phi\E_q(x^2) = \nabla_\phi \E_p((\phi+\eps)^2) = \E_p(2(\phi+\eps)).
 \label{eq:est2}
 \end{equation}
-
 Finally, note that empirically the variance of estimator (\ref{eq:est2}) is an order of magnitude lower compared to (\ref{eq:est1}).
 
 \section{Variational Inference}
 
+Consider variational inference in a latent variable model: we want to evaluate the posterior $p_\theta(z \mid x)$, which usually is intractable due to the evidence $p_\theta(x)$ in the denominator. In a standard variational setup, we find a variational approximation $q_\phi(z \mid x)$ such that it miminizes its "distance" with the true posterior. Or, equivalently, it maximizes a lower bound on the log evidence:
+\begin{equation}
+\L_{\theta,\phi}(x) = \E_{z\sim q_\phi(z\mid x)}(\log(p_\theta(x,z)))-\log(q_\phi(z\mid x)).
+\end{equation}
+Then, we perform learning by a double maximization of this surrogate function (the ELBO): first, with respect to $\phi$ to bridge the gap with the true posterior, and, second, with respect to $\theta$ to maximize the evidence.
 
+The most direct approach for learning is to do gradient descent. However, unfortunately, gradients are not available in closed form because they suffer from the often intractable expectation with respect to $z\sim q_\phi(z\mid x)$. One solution is, then, to replace the true gradients by noisy, unbiased estimators.
+
+We reparameterize $q_\phi(z\mid x)$ with respect to a noise distribution, $s(\eps)$, and we will be able to construct an unbiased estimator of the ELBO based on MCMC samples, as we'll have:
+\begin{equation}
+\L_{\theta,\phi}(x) = \E_{\eps\sim s(\eps)}(\log(p_\theta(x,g_\phi(\eps))))-\log(q_\phi(g_\phi(\eps)).
+\end{equation}
+
+\section{Gumbel}
+
+Unfortunately, for discrete random variables we cannot apply the reparameterization trick directly: A non-dengenerate mapping from a continuous set onto a discrete set is not differentiable. That is, the functional relation $z = g_\phi(\eps)$, we can not conceive $\frac{\partial z}{\partial \phi}$. We can, however, construct alternative estimates of the gradient, that may not enjow the low-variance property of the reparameterization based ones.
+
+The Gumbel-softmax trick \cite{jang2016categorical} is a remedy to overcome the inability of applying the reparameterization trick to discrete random variables. It relies on two insights: (1) the Gumbel distribution provides a nice parameterization for a discrete distribution, and (2) the corresponding non-continuous function can be made continuous by applying an approximation that depends on a temperature parameter, which in the zero-temperature case degenerates to the discontinuous, original expression.
+
+First, we consider the Gumbel distribution. Let $U\sim Unif(0,1)$, then the random variable $G$ is said to have a Gumbel distribution, if $G = -\log(-\log(U))$. Now, we can parameterize any discrete distribution in terms of Gumbel random variables. Let $X$ denote a discrete random variable with $P(X=k) \propto \alpha_k$. Let $\{G_k\}_{k \leq K}$ be an i.i.d. sequence of Gumbel random variables. Then:
+\begin{equation}
+X = \underset{k}{\arg\max}(\log\alpha_k + G_k).
+\label{eq:gumbel}
+\end{equation}
+Thus, a recipe for sampling from a discrete distribution is: (1) draw from a uniform and apply the Gumbel transform, (2) add $\log\alpha_k$, (3) take the value $k$ that yields the maximum.
+
+Second, since the $\arg\max$ in (\ref{eq:gumbel}) is not continuous, we want to relax the discrete set by considering random variables taking values in a larger set. To construct the relaxation, we recognize that: (1) any discrete random variable can always be expressed in the form of an one-hot vector by mapping the realization $k$ to the index of the non-zero entry in the vector, and (2) that the convex hull of the set of one-hot vectors is a probability simplex:
+\begin{equation}
+\Delta^{K-1} = \left\{ x \in \mathbb{R}_+^K,\: \sum_{k=1}^K x_k=1 \right\}.
+\end{equation}
+Therefore, a natural way to relax a discrete random variable by extending its codomain to the probability simplex. Both \cite{MaddisonMT16} and \cite{jang2016categorical} propose softmax indexed by a temperature parameter $\tau$:
+\begin{equation}
+f_\tau(x)_k = \frac{ \exp(x_k/\tau) }{ \sum_{k'=1}^K\exp(x_{k'}/\tau) }.
+\end{equation}
+Then, we define the sequence of simplex-valued random variables as:
+\begin{equation}
+X^\tau_k = f_\tau(\log\alpha+G)_k = \left( \frac{\exp((\log\alpha_k+G_k)/\tau)}{\sum_{k'=1}^K\exp((\log\alpha_{k'}+G_{k'})/\tau)} \right).
+\end{equation}
+The random variable $X^\tau$ is said to have a concrete distribution, denoted by $x^\tau\sim Concrete(\alpha,\tau)$ (a portmanteau between continuous and discrete). Its density is given by:
+\begin{equation}
+p_{\alpha,\tau} = (n-1)!\tau^{n-1}\prod_{k=1}^K\left( \frac{\alpha_k x_k^{-\tau-1}}{\sum_{k'=1}^K \alpha_{k'} x_{k'}^{-\tau}} \right),\:x\in\Delta^{K-1}.
+\end{equation}
+Note, the expression is in closed-form and can be evaluated exactly for $x,\alpha$ and $\tau$. Indeed, in the definition of the ELBO we need to evaluate the entropy term $\E_{z\sim p_\theta(z\mid x)}(-\log(q_\theta(z\mid x)))$ which explicitly depends on the density.
+
+The nature of this relaxation can be better understood by four properties:
+\begin{enumerate}
+\item (Zero temperature) $P(\underset{\tau\rightarrow0}{\lim}X_k^\tau=1) = \alpha_k / \sum_{k'=1}^K\alpha_{k'}$.
+\item (Convex eventually) if $\tau\leq(n-1)^{-1}$, then $p_{\alpha,\tau}(x)$ is log-convex in $x$.
+\item (Rounding) $P(X_k^\tau>X_i^\tau,\forall i\neq k) =  \alpha_k / \sum_{k'=1}^K\alpha_{k'}$
+\item (Tradeoff) For learning, there is a tradeoff between small and large temperatures.
+\end{enumerate}
+
+First, in the zero-temperature limit we recover the discrete distribution. Think of a logistic function modulated by a slope parameter which for high slopes will become the Heaviside step function.
+
+Second, recall we optimize a function that involves the log density. By convexity, we will be better off as long as the temperature is low enough.
+
+Third, even with a non-zero temperature relaxation we can map points $x$ in the simplex to a one-hot vector (extreme-point of the simplex), with non-zero component $k$, so that $x_k$ is closest to one.
+
+Fourth, for small temperatures, the samples resemble a one-hot vector closely, but the variance of the estimate of the gradient is high. For high temperatures, the samples are smooth, but the variance is small.
 
 \bibliographystyle{plain}
 \bibliography{\jobname} 
