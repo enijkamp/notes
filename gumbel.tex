@@ -80,7 +80,7 @@
 \end{center}
 
 \begin{abstract}
-The reparameterization trick enables optimizing networks with stochastic units via gradient descent \cite{KingmaW13}. The essence of the trick is to re-factor each stochastic unit into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such re-parameterizations, discrete random variables lack useful reparameterizations due to the discontinuous nature of discrete states. As a remedy, the gumbel soft-max trick \cite{jang2016categorical} or concrete distribution \cite{MaddisonMT16} serves as a continuous relaxation of discrete random variables. See \cite{KingmaW13}, \cite{MaddisonMT16}, \cite{jang2016categorical}, \cite{casmls2017}, \cite{jang2016}.
+The reparameterization trick enables optimizing networks with stochastic units via gradient descent \cite{KingmaW13}. The essence of the trick is to refactor each stochastic unit into a differentiable function of its parameters and a random variable with fixed distribution. After refactoring, the gradients of the loss propagated by the chain rule are low variance unbiased estimators of the gradients of the expected loss. While many continuous random variables have such reparameterizations, discrete random variables lack useful reparameterizations due to the discontinuous nature of discrete states. As a remedy, the gumbel soft-max trick \cite{jang2016categorical} giving rise to the concrete distribution \cite{MaddisonMT16} serves as a continuous relaxation of discrete random variables. See \cite{KingmaW13}, \cite{MaddisonMT16}, \cite{jang2016categorical}, \cite{casmls2017}, \cite{jang2016}.
 \end{abstract}
 
 \section{Reparameterization Trick}
@@ -158,7 +158,7 @@ We reparameterize $q_\phi(z\mid x)$ with respect to a noise distribution, $s(\ep
 \L_{\theta,\phi}(x) = \E_{\eps\sim s(\eps)}(\log(p_\theta(x,g_\phi(\eps))))-\log(q_\phi(g_\phi(\eps)).
 \end{equation}
 
-Unfortunately, for discrete random variables we cannot apply the reparameterization trick directly: A non-dengenerate mapping from a continuous set onto a discrete set is not differentiable. That is, the functional relation $z = g_\phi(\eps)$, we can not conceive $\frac{\partial z}{\partial \phi}$. We can, however, construct alternative estimates of the gradient, that may not enjow the low-variance property of the reparameterization based ones.
+Unfortunately, for discrete random variables we cannot apply the reparameterization trick directly: A non-dengenerate mapping from a continuous set onto a discrete set is not differentiable. That is, the for functional relation $z = g_\phi(\eps)$, we can not conceive $\frac{\partial z}{\partial \phi}$. We can, however, construct alternative estimates of the gradient, that may not enjow the low-variance property of the reparameterization based ones.
 
 \section{Gumbel-Softmax Trick}
 
@@ -193,7 +193,7 @@ The nature of this relaxation can be better understood by four properties:
 \begin{enumerate}
 \item (Zero temperature) $P(\underset{\tau\rightarrow0}{\lim}X_k^\tau=1) = \alpha_k / \sum_{k'=1}^K\alpha_{k'}$.
 \item (Convex eventually) if $\tau\leq(n-1)^{-1}$, then $p_{\alpha,\tau}(x)$ is log-convex in $x$.
-\item (Rounding) $P(X_k^\tau>X_i^\tau,\forall i\neq k) =  \alpha_k / \sum_{k'=1}^K\alpha_{k'}$
+\item (Rounding) $P(X_k^\tau>X_i^\tau,\forall i\neq k) =  \alpha_k / \sum_{k'=1}^K\alpha_{k'}$.
 \item (Tradeoff) For learning, there is a tradeoff between small and large temperatures.
 \end{enumerate}
 

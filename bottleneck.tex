@@ -1,0 +1,40 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper, margin=2in]{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{epstopdf}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{filecontents}
+
+\def\N{\mathcal{N}}
+\def\L{\mathcal{L}}
+\def\E{\mathbb{E}}
+\def\eps{\epsilon}
+
+\begin{filecontents}{\jobname.bib}
+
+\end{filecontents}
+
+\begin{document}
+
+\begin{center}
+{\LARGE On the Information Bottleneck} 
+\end{center}
+
+Blah
+
+\section{Information Bottleneck}
+
+Let random variable $X$ denote an input source, $Z$ a compressed representation, and $Y$ observed output. We assume a Markov chain $Y \leftrightarrow X \leftrightarrow Z$. That is, $Z$ cannot directly depend on $Y$. Then, the joint distribution $p(X,Y,Z)$ factorizes as:
+\begin{equation}
+p(X, Y, Z) = p(Z\vert X,Y)p(Y\vert X)p(X) = p(Z\vert X)p(Y\vert X)p(X).
+\end{equation}
+
+
+
+\bibliographystyle{plain}
+\bibliography{\jobname} 
+
+\end{document}
