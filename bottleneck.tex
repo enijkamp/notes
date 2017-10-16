@@ -27,10 +27,24 @@ Blah
 
 \section{Information Bottleneck}
 
-Let random variable $X$ denote an input source, $Z$ a compressed representation, and $Y$ observed output. We assume a Markov chain $Y \leftrightarrow X \leftrightarrow Z$. That is, $Z$ cannot directly depend on $Y$. Then, the joint distribution $p(X,Y,Z)$ factorizes as:
+Let random variable $X$ denote an input source, $Z$ a compressed representation, and $Y$ observed output. We assume a Markov chain $Y \leftrightarrow X \leftrightarrow Z$. That is, $Z$ cannot directly depend on $Y$. Then, the joint distribution $p(X,Y,Z)$ factorizes as
 \begin{equation}
 p(X, Y, Z) = p(Z\vert X,Y)p(Y\vert X)p(X) = p(Z\vert X)p(Y\vert X)p(X).
 \end{equation}
+where we assume $p(Z\vert X,Y) = p(Z\vert X)$.
+
+Our goal is to learn an encoding $Z$ that is maximally informative about our target $Y$. As a measure we use the mutual information $I(Z,Y)$ between our encoding and output
+\begin{equation}
+I(Z,Y) = \int \int p(z,y) \log \frac{p(z,y)}{p(z)p(y)} dy\, dz.
+\end{equation}
+
+If this was our only objective, the trivial identity encoding $(Z = X)$ would always ensure a maximal informative representation. Instead, we would like to find the maximally informative representation subject to a constraint on it's complexity. Naturally, we would like to constraint the mutual information between our encoding $Z$ and the input data $Z$ such that $I(X,Z) \leq I_c$ where $I_c$ denotes the information constraint. This suggests our objective:
+\begin{equation}
+\underset{P(Z\vert X)}{\min} I(X,Z) \quad\text{s.t.}\quad I(Z,Y) \leq I_c.
+\end{equation}
+
+
+Our goal is to learn an encoding $Z$ that is maximally expressive about $Y$ while being maximally compressive about $X$. 
 
 
 
