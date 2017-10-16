@@ -23,7 +23,7 @@
 \end{center}
 
 \begin{abstract}
-The Information Bottleneck (IB) formalizes the notion of a ``good'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. It was introduced by Naftali Tishby et al. in 1999 and appears to be fundamental to a deep understanding of representations. We draw connections to (1) minimal sufficient statistics, (2) the formulation of variational auto-encoders, and (3) the topology of deep neural networks.
+The Information Bottleneck (IB) formalizes the notion of an information-theoretic ``optimal'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. It was introduced by Naftali Tishby et al. in 1999 and appears to be fundamental to a deep understanding of representations. We draw connections to (1) minimal sufficient statistics, (2) the formulation of variational auto-encoders, and (3) the topology of deep neural networks.
 \end{abstract}
 
 \section{Mutual Information}
@@ -31,11 +31,41 @@ The Information Bottleneck (IB) formalizes the notion of a ``good'' representati
 % https://arxiv.org/abs/1703.00810
 % https://en.wikipedia.org/wiki/Mutual_information
 
+Given any two random variables, $X$ and $Y$, with joint distribution $p(x, y)$, their Mutual Information $I(X,Y) = I(Y,X) \geq 0$ is defined as:
+\begin{align}
+\begin{split}
+I(X,Y)
+&= D_{KL}[p(x,y)\rVert p(x)p(y)] \\[4pt]
+&= \iint p(x,y) \log \frac{p(x,y)}{p(x)p(y)} dx\,dy \\
+&= \iint p(x,y) \log \frac{p(x\vert y)}{p(x)} dx\,dy \\[4pt]
+&= H(X) - H(X\vert Y) 
+\end{split}
+\end{align}
+where $D_{KL}[p\rVert q]$ denotes the Kullback-Leibler divergence of distributions $p$ and $q$, and $H(X)$ and $H(X\vert Y)$ are the entropy and conditional entropy of $X$ and $Y$, respectively. Note, if $X \perp Y$, then $p(x,y) = p(x)p(y)$, and therefore:
+\begin{equation}
+X \perp Y \; \Leftrightarrow \; \log\frac{p(x,y)}{p(x)p(y)} = \log 1 \; \Leftrightarrow \; I(X,Y) = 0.
+\end{equation}
+The concept is intricately linked to that of entropy of a random variable, a fundamental notion that defined ``amount of information'' held in a random variable:
+\begin{equation}
+I(X,Y) = H(X) - H(X \vert Y) = H(X) - H(X \vert Z) = H(X) + H(Y) - H(X,Y).
+\end{equation}
+The mutual information $I(X,Y)$ quantifies the ``amount of information'' - the average number of relevant bits - obtained about one random variable $X$, through the other random variable $Y$. It measures the inherent dependence expressed in the joint distribution of $X$ and $Y$ relative to the joint distribution of $X$ and $Y$ under the assumption of independence. Define $X$ as some input variable and $Y$ as the label. Then, an optimal learning problem can be cast as the construction of an \textit{optimal encoder} of that relevant information via an efficient representation - a minimal sufficient statistic of $X$ with respect to $Y$ - if such can be found. A minimal sufficient statistic can enable the \textit{decoding} of the relevant information with the smallest number of binary questions (on average), i.e. an \textit{optimal code}.
+Two properties of the mutual information are fundamental in our context. First, the invariance to invertible transformations
+\begin{equation}
+I(X,Y) = I(\psi(X), \phi(Y))
+\end{equation}
+for any invertible functions $\psi(\cdot)$ and $\phi(\cdot)$. Second, the ``Data Processing Inequality'' (DPI): for any 3 random variables which form a Markov chain $X\rightarrow Y \rightarrow Z$ it holds
+\begin{equation}
+I(X,Y) \geq I(X,Z).
+\end{equation}
+
 \section{Information Bottleneck}
 
 % https://arxiv.org/pdf/1612.00410.pdf
 
-Let random variable $X$ denote an input source, $Z$ a compressed representation, and $Y$ observed output. We assume a Markov chain $Y \leftrightarrow X \leftrightarrow Z$ \myworries{directed?}. That is, $Z$ cannot directly depend on $Y$. Then, the joint distribution $p(X,Y,Z)$ factorizes as
+\myworries{refine with \url{https://arxiv.org/abs/1703.00810}}
+
+Let random variable $X$ denote an input source, $Z$ a compressed representation, and $Y$ observed output. We assume a Markov chain $X\rightarrow Y \rightarrow Z$. That is, $Z$ cannot directly depend on $Y$. Then, the joint distribution $p(X,Y,Z)$ factorizes as
 \begin{equation}
 p(X, Y, Z) = p(Z\vert X,Y)p(Y\vert X)p(X) = p(Z\vert X)p(Y\vert X)p(X).
 \end{equation}
@@ -50,18 +80,7 @@ where  $p(y\vert z)$ is fully defined by stochastic encoder $p(Z\vert X)$ and Ma
 p(y\vert z) = \int p(x,y\vert z) dx = \int p(y \vert x) p(x \vert z) dx = \int \frac{p(y \vert x)p(z \vert x) p(x)}{p(z)}dx.
 \label{eq:p_y_z}
 \end{equation}
-\myworries{refine with \url{https://arxiv.org/abs/1703.00810}}
-Recall, the mutual information $I(X,Y) = I(Y,X)$ quantifies the ``amount of information'' obtained about one random variable $X$, through the other random variable $Y$. It measures the inherent dependence expressed in the joint distribution of $X$ and $Y$ relative to the joint distribution of $X$ and $Y$ under the assumption of independence. If $X \perp Y$, then $p(x,y) = p(x)p(y)$, and therefore:
-\begin{equation}
-X \perp Y \Leftrightarrow \log\frac{p(x,y)}{p(x)p(y)} = \log 1 \Leftrightarrow I(X,Y) = 0.
-\end{equation}
-The concept is intricately linked to that of entropy of a random variable, a fundamental notion that defined ``amount of information'' held in a random variable:
-\begin{equation}
-I(X,Y) = H(X) - H(X \vert Y) = H(X) - H(X \vert Z) = H(X) + H(Y) - H(X,Y)
-\end{equation}
-where $H(\cdot)$ denotes marginal and $H(\cdot,\cdot)$ joint entropy.
-
-If maximizing (\ref{eq:I_Z_Y}) was our only objective, then the trivial identity encoding $(Z = X)$ would always ensure a maximal informative representation. Instead, we would like to find the maximally informative representation subject to a constraint on it's complexity. Naturally, we constrain the mutual information between our encoding $Z$ and the input data $X$ such that $I(X,Z) \leq I_c$ where $I_c$ denotes the information constraint. This suggests our objective:
+If maximizing (\ref{eq:I_Z_Y}) was our only objective, then the trivial identity encoding ${(Z = X)}$ would always ensure a maximal informative representation. Instead, we would like to find the maximally informative representation subject to a constraint on it's complexity. Naturally, we constrain the mutual information between our encoding $Z$ and the input data $X$ such that $I(X,Z) \leq I_c$ where $I_c$ denotes the information constraint. This suggests our objective:
 \begin{equation}
 \underset{P(Z\vert X)}{\min} I(Z,Y) \quad\text{s.t.}\quad I(X,Z) \leq I_c.
 \end{equation}
