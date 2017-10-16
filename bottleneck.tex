@@ -1,6 +1,6 @@
 \documentclass[11pt]{article}
 
-\usepackage[letterpaper, margin=2in]{geometry}
+\usepackage[letterpaper, margin=1.7in]{geometry}
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage{epstopdf}
@@ -12,6 +12,9 @@
 \def\L{\mathcal{L}}
 \def\E{\mathbb{E}}
 \def\eps{\epsilon}
+
+\usepackage{xcolor}
+\newcommand\myworries[1]{\textcolor{red}{(#1)}}
 
 \begin{filecontents}{\jobname.bib}
 
@@ -27,26 +30,49 @@ Blah
 
 \section{Information Bottleneck}
 
+% https://arxiv.org/pdf/1612.00410.pdf
+
 Let random variable $X$ denote an input source, $Z$ a compressed representation, and $Y$ observed output. We assume a Markov chain $Y \leftrightarrow X \leftrightarrow Z$. That is, $Z$ cannot directly depend on $Y$. Then, the joint distribution $p(X,Y,Z)$ factorizes as
 \begin{equation}
 p(X, Y, Z) = p(Z\vert X,Y)p(Y\vert X)p(X) = p(Z\vert X)p(Y\vert X)p(X).
 \end{equation}
 where we assume $p(Z\vert X,Y) = p(Z\vert X)$.
-
 Our goal is to learn an encoding $Z$ that is maximally informative about our target $Y$. As a measure we use the mutual information $I(Z,Y)$ between our encoding and output
 \begin{equation}
-I(Z,Y) = \int \int p(z,y) \log \frac{p(z,y)}{p(z)p(y)} dy\, dz.
+I(Z,Y) = \iint p(z,y) \log \frac{p(z,y)}{p(z)p(y)} dy\, dz = \iint p(y,z) \log \frac{p(y\vert z)}{p(y)}
+\label{eq:I_Z_Y}
 \end{equation}
-
-If this was our only objective, the trivial identity encoding $(Z = X)$ would always ensure a maximal informative representation. Instead, we would like to find the maximally informative representation subject to a constraint on it's complexity. Naturally, we would like to constraint the mutual information between our encoding $Z$ and the input data $Z$ such that $I(X,Z) \leq I_c$ where $I_c$ denotes the information constraint. This suggests our objective:
+\myworries{X,Y,Z flipped?}
+where  $p(y\vert z)$ is fully defined by stochastic encoder $p(Z\vert X)$ and Markov chain as
 \begin{equation}
-\underset{P(Z\vert X)}{\min} I(X,Z) \quad\text{s.t.}\quad I(Z,Y) \leq I_c.
+p(y\vert z) = \int p(x,y\vert z) dx = \int p(y \vert x) p(x \vert z) dx = \int \frac{p(y \vert x)p(z \vert x) p(x)}{p(z)}dx.
+\label{eq:p_y_z}
 \end{equation}
+If maximizing (\ref{eq:I_Z_Y}) was our only objective, then the trivial identity encoding $(Z = X)$ would always ensure a maximal informative representation. Instead, we would like to find the maximally informative representation subject to a constraint on it's complexity. Naturally, we constrain the mutual information between our encoding $Z$ and the input data $X$ such that $I(X,Z) \leq I_c$ where $I_c$ denotes the information constraint. This suggests our objective:
+\begin{equation}
+\underset{P(Z\vert X)}{\min} I(Z,Y) \quad\text{s.t.}\quad I(X,Z) \leq I_c.
+\end{equation}
+\myworries{$P(Z\vert X)$ correct?}
+\myworries{doesn't match with \url{https://en.wikipedia.org/wiki/Information_bottleneck_method}, see comment 3 page 1}
+Equivalently, we introduce a Lagrange multiplier $\beta$ and write the objective as:
+\begin{equation}
+R(\theta) = I(Z,Y) - \beta I(Z,X).
+\label{eq:IB}
+\end{equation}
+\myworries{$\theta$?}
+Here, our goal is to learn an encoding $Z$ that is maximally expressive about $Y$ while being maximally compressive about $X$. Then, $\beta\geq 0$ controls the tradeoff between informativeness and compression where large $\beta$ corresponds to highly compressed representations. This approach is known as the Information Bottleneck (IB). Intuitively, the first term in (\ref{eq:IB}) encourages $Z$ to be ``predictive'' of $Y$; the second term encourages $Z$ to ``forget'' $X$. Essentially, it forces $Z$ to act like a minimal sufficient statistic of $X$ for predicting $Y$.
 
+The IB is appealing, since it defines a ``good'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. The main drawback is that computing the mutual information is, in general, computationally challenging since (\ref{eq:p_y_z}) is intractable.
 
-Our goal is to learn an encoding $Z$ that is maximally expressive about $Y$ while being maximally compressive about $X$. 
+\section{Minimal Sufficient Statistics}
 
+\section{Variational Formulation}
 
+% https://arxiv.org/pdf/1612.00410.pdf
+
+\section{$\beta$-VAE}
+
+\section{Information Plane}
 
 \bibliographystyle{plain}
 \bibliography{\jobname} 
