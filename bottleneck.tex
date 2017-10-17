@@ -23,7 +23,7 @@
 \end{center}
 
 \begin{abstract}
-The Information Bottleneck (IB) formalizes the notion of an information-theoretic ``optimal'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. It was introduced by Naftali Tishby et al. in 1999 and appears to be fundamental to a deep understanding of representations. We draw connections to (1) minimal sufficient statistics, (2) the formulation of variational auto-encoders, and (3) the topology of deep neural networks.
+The Information Bottleneck (IB) formalizes the notion of an information-theoretic ``optimal'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. It was introduced by Naftali Tishby et al. in 1999 and appears to be fundamental to a deep understanding of representations. We draw connections to (1) minimal sufficient statistics, (2) the formulation of variational auto-encoders, and, (3) the topology of deep neural networks.
 \end{abstract}
 
 \section{Mutual Information}
@@ -49,7 +49,7 @@ The concept is intricately linked to that of entropy of a random variable, a fun
 \begin{equation}
 I(X,Y) = H(X) - H(X \vert Y) = H(X) - H(X \vert Z) = H(X) + H(Y) - H(X,Y).
 \end{equation}
-The mutual information $I(X,Y)$ quantifies the ``amount of information'' - the average number of relevant bits - obtained about one random variable $X$, through the other random variable $Y$. It measures the inherent dependence expressed in the joint distribution of $X$ and $Y$ relative to the joint distribution of $X$ and $Y$ under the assumption of independence. Define $X$ as some input variable and $Y$ as the label. Then, an optimal learning problem can be cast as the construction of an \textit{optimal encoder} of that relevant information via an efficient representation - a minimal sufficient statistic of $X$ with respect to $Y$ - if such can be found. A minimal sufficient statistic can enable the \textit{decoding} of the relevant information with the smallest number of binary questions (on average), i.e. an \textit{optimal code}.
+The mutual information $I(X,Y)$ quantifies the ``amount of information'', the average number of relevant bits, obtained about one random variable $X$, through the other random variable $Y$. It measures the inherent dependence expressed in the joint distribution of $X$ and $Y$ relative to the joint distribution of $X$ and $Y$ under the assumption of independence. Define $X$ as some input variable and $Y$ as the label. Then, an optimal learning problem can be cast as the construction of an \textit{optimal encoder} of that relevant information via an efficient representation, a minimal sufficient statistic of $X$ with respect to $Y$, if such can be found. A minimal sufficient statistic can enable the \textit{decoding} of the relevant information with the smallest number of binary questions (on average), i.e. an \textit{optimal code}.
 Two properties of the mutual information are fundamental in our context. First, the invariance to invertible transformations
 \begin{equation}
 I(X,Y) = I(\psi(X), \phi(Y))
@@ -57,6 +57,7 @@ I(X,Y) = I(\psi(X), \phi(Y))
 for any invertible functions $\psi(\cdot)$ and $\phi(\cdot)$. Second, the ``Data Processing Inequality'' (DPI): for any 3 random variables which form a Markov chain $X\rightarrow Y \rightarrow Z$ it holds
 \begin{equation}
 I(X,Y) \geq I(X,Z).
+\label{eq:dpi}
 \end{equation}
 
 \section{Information Bottleneck}
@@ -97,6 +98,24 @@ Here, our goal is to learn an encoding $Z$ that is maximally expressive about $Y
 The IB is appealing, since it defines a ``good'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. The main drawback is that computing the mutual information is, in general, computationally challenging since (\ref{eq:p_y_z}) is intractable.
 
 \section{Minimal Sufficient Statistics}
+
+What characterizes the optimal representation of $X$ with respect to $Y$? The classical notion of minimal sufficient statistics provides good candidates for optimal representations. In our setting, sufficient statistics $S(X)$ are a partitioning on $X$, that captures all the information that $X$ has on $Y$. That is, $I(S(X), Y) = I(X,Y)$.
+
+Minimal sufficient statistics, $T(X)$, are the simplest sufficient statistics and induce the coarsest sufficient partition on $X$. Formally, they are functions of any other sufficient statistic. We can formulate this by a Markov chain:
+\begin{equation}
+Y\rightarrow X\rightarrow S(X) \rightarrow T(X),
+\end{equation}
+which holds for any minimal sufficient statistic $T(X)$ with any other sufficient statistic $S(X)$. Using the DPI in (\ref{eq:dpi}), we cast this into an optimization problem:
+\begin{equation}
+T(X) = \underset{\{S(X):I(S(X,Y))=I(X,Y)\}}{\arg\min} I(S(X), X).
+\end{equation}
+Since exact minimal sufficient statistics only exist for distributions of exponential families, Tishby relaxed this optimization problem by first, allowing the map to be stochastic, defined as an encoder $P(T\vert X)$, and second, by allowing the map to capute \textit{as much as possible} of $I(X,Y)$, not necessarily all of it.
+This leads to the \textit{Information Bottleneck} tradeoff, which provides a computational framework for finding approximate minimal sufficient statistics, or, the optimal tradeoff between compression of $X$ and prediction of $Y$. In this sense, efficient representations are approximate minimal sufficient statistics.
+Define $t\in T$ as a compressed representation of $x\in X$, then the mapping $p(t\vert x)$ defines the representation of $x$. This Information Bottleneck tradeoff is formulated by the following optimization problem, carried independently for the distributions $p(t\vert x), p(t), p(y\vert t)$, with Markov chain $Y\rightarrow X \rightarrow T$,
+\begin{equation}
+\underset{p(t\vert x), p(t), p(y\vert t)}{\min} \{ I(X,T)-\beta I(T,Y) \}.
+\end{equation}
+The Lagrange multipler $\beta$ determines the level of relevant information $I(T,Y)$ captured by the representation $T$, which is directly related to the error in the label prediction from this representation.
 
 \section{Variational Formulation}
 
