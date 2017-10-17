@@ -23,7 +23,7 @@
 \end{center}
 
 \begin{abstract}
-The Information Bottleneck (IB) formalizes the notion of an information-theoretic ``optimal'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. It was introduced by Naftali Tishby et al. in 1999 and appears to be fundamental to a deep understanding of representations. We draw connections to (1) minimal sufficient statistics, (2) the formulation of variational auto-encoders, and, (3) the topology of deep neural networks.
+The Information Bottleneck (IB) formalizes the notion of an information-theoretic ``optimal'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. It was introduced by Naftali Tishby et al. in 1999 and appears to be fundamental to a deep understanding of representations. We draw connections to (1) minimal sufficient statistics, (2) the formulation of variational auto-encoders, and, (3) the topology of and SGD dynamics deep neural networks.
 \end{abstract}
 
 \section{Mutual Information}
@@ -65,6 +65,7 @@ I(X,Y) \geq I(X,Z).
 % https://arxiv.org/pdf/1612.00410.pdf
 
 \myworries{refine with \url{https://arxiv.org/abs/1703.00810}}
+\myworries{change Z to T}
 
 Let random variable $X$ denote an input source, $Z$ a compressed representation, and $Y$ observed output. We assume a Markov chain $X\rightarrow Y \rightarrow Z$. That is, $Z$ cannot directly depend on $Y$. Then, the joint distribution $p(X,Y,Z)$ factorizes as
 \begin{equation}
@@ -93,7 +94,7 @@ R(\theta) = I(Z,Y) - \beta I(Z,X).
 \label{eq:IB}
 \end{equation}
 \myworries{$\theta$?}
-Here, our goal is to learn an encoding $Z$ that is maximally expressive about $Y$ while being maximally compressive about $X$. Then, $\beta\geq 0$ controls the tradeoff between informativeness and compression where large $\beta$ corresponds to highly compressed representations. This approach is known as the Information Bottleneck (IB). Intuitively, the first term in (\ref{eq:IB}) encourages $Z$ to be ``predictive'' of $Y$; the second term encourages $Z$ to ``forget'' $X$. Essentially, it forces $Z$ to act like a minimal sufficient statistic of $X$ for predicting $Y$.
+Here, our goal is to learn an encoding $Z$ that is maximally expressive about $Y$ while being maximally compressive about $X$. Then, $\beta\geq 0$ controls the tradeoff between informativeness and compression where large $\beta$ corresponds to highly compressed representations. \myworries{this is inverse to Tishbys formulation, fix} This approach is known as the Information Bottleneck (IB). Intuitively, the first term in (\ref{eq:IB}) encourages $Z$ to be ``predictive'' of $Y$; the second term encourages $Z$ to ``forget'' $X$. Essentially, it forces $Z$ to act like a minimal sufficient statistic of $X$ for predicting $Y$.
 
 The IB is appealing, since it defines a ``good'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. The main drawback is that computing the mutual information is, in general, computationally challenging since (\ref{eq:p_y_z}) is intractable.
 
@@ -115,15 +116,31 @@ Define $t\in T$ as a compressed representation of $x\in X$, then the mapping $p(
 \begin{equation}
 \underset{p(t\vert x), p(t), p(y\vert t)}{\min} \{ I(X,T)-\beta I(T,Y) \}.
 \end{equation}
-The Lagrange multipler $\beta$ determines the level of relevant information $I(T,Y)$ captured by the representation $T$, which is directly related to the error in the label prediction from this representation.
-
-\section{Variational Formulation}
-
-% https://arxiv.org/pdf/1612.00410.pdf
-
-\myworries{$\beta$-VAE here}
+The Lagrange multipler $\beta$ determines the level of relevant information $I(T,Y)$ captured by the representation $T$, which is directly related to the error in the label prediction from this representation. The implicit solution to this problem is given by three self-consistent equations:
+\begin{equation}
+\begin{cases}
+\begin{array}{rl}
+p(t\vert x) & =\frac{p(t)}{Z_{\beta}(x)}\exp\left(-\beta D_{KL}\left[p(y\vert x)\rVert p(y\vert t)\right]\right)\\
+p(t) & =\int p(t\vert x)p(x)dx\\
+p(y\vert t) & =\int p(y\vert x)p(x\vert t)dx
+\end{array}
+\end{cases}
+\end{equation}
+where $X_\beta(x)$ denotes the normalization function. These equations are satisfied along the \textit{information curve}, which is a monotonic concave line of optimal representations that separates achievable and unachievable regions in the information-plane. For smooth $p(X,Y)$, i.e. when $Y$ is not a completely deterministic function of $X$, the information curve is strictly concave with unique slope $beta^{-1}$, at every point. In these cases, $\beta$ determines a single point on the information curve with specified encoder $P_\beta(T\vert X)$ and decoder $P_\beta(Y\vert T)$.
 
 \section{Information Plane}
+
+Any representation $T$, defined as a (possibly stochastic) map of input variable $X$, is characterized by its joint distributions with $X$ and $Y$, or by its encoder and decoder distributions, $P(T\vert X)$ and $P(Y\vert T)$, respectively. Given $P(X,Y)$, $T$ is uniquely mapped to a point in the information plane with coordinates $(I(X,T),\,I(T,Y))$. Given a Markov chain $Y\rightarrow X \rightarrow T_1 \rightarrow \ldots \rightarrow T_k \rightarrow \hat{Y}$ with a set of representations $\{T_i : i=1,\ldots,k\}$ and predicted output $\hat{Y}$, then $T_i$ are mapped to $K$ monotonic connected points in the plane. This unique \textit{information path} satisfies the DPI chains:
+\begin{gather}
+I(X,Y) \geq I(T_1,Y) \geq T(T2,Y) \geq \ldots \geq I(T_k, Y) \geq I(\hat{Y}, Y),\\
+H(X) \geq I(X,T_1) \geq I(X,T_2) \geq \ldots \geq I(X,T_k) \geq I(X,\hat{Y}).
+\end{gather}
+
+\myworries{figure here}
+
+
+
+\section{Deep Neural Networks}
 
 % https://arxiv.org/abs/1703.00810
 % https://www.youtube.com/watch?v=bLqJHjXihK8
@@ -132,6 +149,12 @@ The Lagrange multipler $\beta$ determines the level of relevant information $I(T
 
 \myworries{youtube deep-NN here}
 \myworries{generalization bound here}
+
+\section{Variational Approximation}
+
+% https://arxiv.org/pdf/1612.00410.pdf
+
+\myworries{$\beta$-VAE here}
 
 \bibliographystyle{plain}
 \bibliography{\jobname} 
