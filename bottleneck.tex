@@ -14,7 +14,8 @@
 % (1) variational    https://arxiv.org/abs/1612.00410
 % (2) black-box    https://arxiv.org/abs/1703.00810
 % (3) youtube       https://www.youtube.com/watch?v=bLqJHjXihK8
-% (4) original         http://www.cs.huji.ac.il/labs/learning/Papers/allerton.pdf
+% (4) original        http://www.cs.huji.ac.il/labs/learning/Papers/allerton.pdf
+% (5) blog             https://lilianweng.github.io/lil-log/2017/09/28/anatomize-deep-learning-with-information-theory.html
 
 \begin{document}
 	
@@ -26,15 +27,43 @@
 The Information Bottleneck (IB) formalizes the notion of an information-theoretic ``optimal'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. It was introduced by Naftali Tishby et al. in 1999 and appears to be fundamental to a deep understanding of representations. We draw connections to (1) minimal sufficient statistics, (2) the formulation of variational auto-encoders, and, (3) the topology of and SGD dynamics deep neural networks.
 \end{abstract}
 
-\section{Mutual Information}
+\section{Information Theory}
+
+\subsection*{Entropy}
+Let $X$ be a random variable, then the entropy $H(X)$ is
+\begin{equation}
+H(X) = E[-\log X] = -\int p(x) \log p(x) dx.
+\end{equation}
+Let $X$ and $Y$ be random variables, then conditional entropy $H(X\vert Y)$ is
+\begin{equation}
+H(X) = \iint p(x,y) \log p(x\vert y) dx\,dy.
+\end{equation}
+
+\subsection*{Markov Chain}
+A Markov chain is a collection of random variables $\{X_i\}$ having the property that, given the present, the future is conditionally independent of the past. That is, the Markov process is a ``memoryless'' (also called ``Markov Property'') stochastic process.
+\begin{align}
+P(X_t = x_t \vert X_0 = x_0, X_1 = x_1, \ldots, X_{t-1}=x_{t-1}) = P(X_t=x_t \vert X_{t-1} = x_{t-1}).
+\end{align}
+A simple random walk, or Brownian motion, is an example of a Markov chain.
+
+\subsection*{Kullback-Leibler Divergence}
+Let $p$ and $q$ denote two probability distributions, then the Kullback-Leibler divergence is
+\begin{align}
+D_{KL}(p\rVert q)
+&= \int p(x) \log \frac{p(x)}{q(x)} dx\\
+&= - \int p(x) \log q(x) dx + \int p(x) \log p(x) dx \\
+&= H(P, Q) - H(P).
+\end{align}
+
+\subsection*{Mutual Information}
 
 % https://arxiv.org/abs/1703.00810
 % https://en.wikipedia.org/wiki/Mutual_information
 
-Given any two random variables, $X$ and $Y$, with joint distribution $p(x, y)$, their Mutual Information $I(X,Y) = I(Y,X) \geq 0$ is defined as:
+Given any two random variables, $X$ and $Y$, with joint distribution $p(x, y)$, their Mutual Information $I(X;Y) = I(Y;X) \geq 0$ is defined as:
 \begin{align}
 \begin{split}
-I(X,Y)
+I(X;Y)
 &= D_{KL}[p(x,y)\rVert p(x)p(y)] \\[4pt]
 &= \iint p(x,y) \log \frac{p(x,y)}{p(x)p(y)} dx\,dy \\
 &= \iint p(x,y) \log \frac{p(x\vert y)}{p(x)} dx\,dy \\[4pt]
@@ -43,24 +72,29 @@ I(X,Y)
 \end{align}
 where $D_{KL}[p\rVert q]$ denotes the Kullback-Leibler divergence of distributions $p$ and $q$, and $H(X)$ and $H(X\vert Y)$ are the entropy and conditional entropy of $X$ and $Y$, respectively. Note, if $X \perp Y$, then $p(x,y) = p(x)p(y)$, and therefore:
 \begin{equation}
-X \perp Y \; \Leftrightarrow \; \log\frac{p(x,y)}{p(x)p(y)} = \log 1 \; \Leftrightarrow \; I(X,Y) = 0.
+X \perp Y \; \Leftrightarrow \; \log\frac{p(x,y)}{p(x)p(y)} = \log 1 \; \Leftrightarrow \; I(X;Y) = 0.
 \end{equation}
 The concept is intricately linked to that of entropy of a random variable, a fundamental notion that defined ``amount of information'' held in a random variable:
 \begin{equation}
-I(X,Y) = H(X) - H(X \vert Y) = H(X) - H(X \vert Z) = H(X) + H(Y) - H(X,Y).
+I(X;Y) = H(X) - H(X \vert Y) = H(X) - H(X \vert Z) = H(X) + H(Y) - H(X,Y).
 \end{equation}
-The mutual information $I(X,Y)$ quantifies the ``amount of information'', the average number of relevant bits, obtained about one random variable $X$, through the other random variable $Y$. It measures the inherent dependence expressed in the joint distribution of $X$ and $Y$ relative to the joint distribution of $X$ and $Y$ under the assumption of independence. Define $X$ as some input variable and $Y$ as the label. Then, an optimal learning problem can be cast as the construction of an \textit{optimal encoder} of that relevant information via an efficient representation, a minimal sufficient statistic of $X$ with respect to $Y$, if such can be found. A minimal sufficient statistic can enable the \textit{decoding} of the relevant information with the smallest number of binary questions (on average), i.e. an \textit{optimal code}.
-Two properties of the mutual information are fundamental in our context. First, the invariance to invertible transformations
+The mutual information $I(X;Y)$ quantifies the ``amount of information'', the average number of relevant bits, obtained about one random variable $X$, through the other random variable $Y$. It measures the inherent dependence expressed in the joint distribution of $X$ and $Y$ relative to the joint distribution of $X$ and $Y$ under the assumption of independence. Define $X$ as some input variable and $Y$ as the label. Then, an optimal learning problem can be cast as the construction of an \textit{optimal encoder} of that relevant information via an efficient representation, a minimal sufficient statistic of $X$ with respect to $Y$, if such can be found. A minimal sufficient statistic can enable the \textit{decoding} of the relevant information with the smallest number of binary questions (on average), i.e. an \textit{optimal code}.
+
+\subsection*{Reparametrization Invariance \& DPI}
+
+Two properties of the mutual information are fundamental in our context. First, the \textit{Reparametrization Invariance}, that is the invariance to invertible transformations
 \begin{equation}
-I(X,Y) = I(\psi(X), \phi(Y))
+I(X;Y) = I(\psi(X); \phi(Y))
 \end{equation}
-for any invertible functions $\psi(\cdot)$ and $\phi(\cdot)$. Second, the ``Data Processing Inequality'' (DPI): for any 3 random variables which form a Markov chain $X\rightarrow Y \rightarrow Z$ it holds
+for any invertible functions $\psi(\cdot)$ and $\phi(\cdot)$. Second, the \textit{Data Processing Inequality} (DPI), that is for any 3 random variables which form a Markov chain $X\rightarrow Y \rightarrow Z$ it holds
 \begin{equation}
-I(X,Y) \geq I(X,Z).
+I(X;Y) \geq I(X;Z).
 \label{eq:dpi}
 \end{equation}
 
 \section{Information Bottleneck}
+
+\subsection*{Optimal Representation}
 
 % https://arxiv.org/pdf/1612.00410.pdf
 
@@ -72,9 +106,9 @@ Let random variable $X$ denote an input source, $Z$ a compressed representation,
 p(X, Y, Z) = p(Z\vert X,Y)p(Y\vert X)p(X) = p(Z\vert X)p(Y\vert X)p(X).
 \end{equation}
 where we assume $p(Z\vert X,Y) = p(Z\vert X)$.
-Our goal is to learn an encoding $Z$ that is maximally informative about our target $Y$. As a measure we use the mutual information $I(Z,Y) \geq 0$ between our encoding $Z$ and output $X$
+Our goal is to learn an encoding $Z$ that is maximally informative about our target $Y$. As a measure we use the mutual information $I(Z;Y) \geq 0$ between our encoding $Z$ and output $X$
 \begin{equation}
-I(Z,Y) = \iint p(z,y) \log \frac{p(z,y)}{p(z)p(y)} dy\, dz = \iint p(y,z) \log \frac{p(y\vert z)}{p(y)}
+I(Z;Y) = \iint p(z,y) \log \frac{p(z,y)}{p(z)p(y)} dy\, dz = \iint p(y,z) \log \frac{p(y\vert z)}{p(y)}
 \label{eq:I_Z_Y}
 \end{equation}
 where  $p(y\vert z)$ is fully defined by stochastic encoder $p(Z\vert X)$ and Markov chain as
@@ -82,25 +116,22 @@ where  $p(y\vert z)$ is fully defined by stochastic encoder $p(Z\vert X)$ and Ma
 p(y\vert z) = \int p(x,y\vert z) dx = \int p(y \vert x) p(x \vert z) dx = \int \frac{p(y \vert x)p(z \vert x) p(x)}{p(z)}dx.
 \label{eq:p_y_z}
 \end{equation}
-If maximizing (\ref{eq:I_Z_Y}) was our only objective, then the trivial identity encoding ${(Z = X)}$ would always ensure a maximal informative representation. Instead, we would like to find the maximally informative representation subject to a constraint on it's complexity. Naturally, we constrain the mutual information between our encoding $Z$ and the input data $X$ such that $I(X,Z) \leq I_c$ where $I_c$ denotes the information constraint. This suggests our objective:
+If maximizing (\ref{eq:I_Z_Y}) was our only objective, then the trivial identity encoding ${(Z = X)}$ would always ensure a maximal informative representation. Instead, we would like to find the maximally informative representation subject to a constraint on it's complexity. Naturally, we constrain the mutual information between our encoding $Z$ and the input data $X$ such that $I(X;Z) \leq I_c$ where $I_c$ denotes the information constraint. This suggests our objective:
 \begin{equation}
-\underset{P(Z\vert X)}{\min} I(Z,Y) \quad\text{s.t.}\quad I(X,Z) \leq I_c.
+\min I(Z;Y) \quad\text{s.t.}\quad I(X;Z) \leq I_c.
 \end{equation}
-\myworries{$P(Z\vert X)$ correct?}
-\myworries{doesn't match with \url{https://en.wikipedia.org/wiki/Information_bottleneck_method}, see comment 3 page 1}
 Equivalently, we introduce a Lagrange multiplier $\beta$ and write the objective as:
 \begin{equation}
-R(\theta) = I(Z,Y) - \beta I(Z,X).
+I(Z;Y) - \beta I(Z;X).
 \label{eq:IB}
 \end{equation}
-\myworries{$\theta$?}
 Here, our goal is to learn an encoding $Z$ that is maximally expressive about $Y$ while being maximally compressive about $X$. Then, $\beta\geq 0$ controls the tradeoff between informativeness and compression where large $\beta$ corresponds to highly compressed representations. \myworries{this is inverse to Tishbys formulation, fix} This approach is known as the Information Bottleneck (IB). Intuitively, the first term in (\ref{eq:IB}) encourages $Z$ to be ``predictive'' of $Y$; the second term encourages $Z$ to ``forget'' $X$. Essentially, it forces $Z$ to act like a minimal sufficient statistic of $X$ for predicting $Y$.
 
-The IB is appealing, since it defines a ``good'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. The main drawback is that computing the mutual information is, in general, computationally challenging since (\ref{eq:p_y_z}) is intractable.
+The IB is appealing, since it defines a ``optimal'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. The main drawback is that computing the mutual information is, in general, computationally challenging since (\ref{eq:p_y_z}) is intractable.
 
-\section{Minimal Sufficient Statistics}
+\subsection*{Relaxed Minimal Sufficient Statistic}
 
-What characterizes the optimal representation of $X$ with respect to $Y$? The classical notion of minimal sufficient statistics provides good candidates for optimal representations. In our setting, sufficient statistics $S(X)$ are a partitioning on $X$, that captures all the information that $X$ has on $Y$. That is, $I(S(X), Y) = I(X,Y)$.
+What characterizes the optimal representation of $X$ with respect to $Y$? The classical notion of minimal sufficient statistics provides good candidates for optimal representations. In our setting, sufficient statistics $S(X)$ are a partitioning on $X$, that captures all the information that $X$ has on $Y$. That is, $I(S(X); Y) = I(X;Y)$.
 
 Minimal sufficient statistics, $T(X)$, are the simplest sufficient statistics and induce the coarsest sufficient partition on $X$. Formally, they are functions of any other sufficient statistic. We can formulate this by a Markov chain:
 \begin{equation}
@@ -108,15 +139,15 @@ Y\rightarrow X\rightarrow S(X) \rightarrow T(X),
 \end{equation}
 which holds for any minimal sufficient statistic $T(X)$ with any other sufficient statistic $S(X)$. Using the DPI in (\ref{eq:dpi}), we cast this into an optimization problem:
 \begin{equation}
-T(X) = \underset{\{S(X):I(S(X,Y))=I(X,Y)\}}{\arg\min} I(S(X), X).
+T(X) = \underset{\{S(X):I(S(X;Y))=I(X;Y)\}}{\arg\min} I(S(X); X).
 \end{equation}
-Since exact minimal sufficient statistics only exist for distributions of exponential families, Tishby relaxed this optimization problem by first, allowing the map to be stochastic, defined as an encoder $P(T\vert X)$, and second, by allowing the map to capute \textit{as much as possible} of $I(X,Y)$, not necessarily all of it.
+Since exact minimal sufficient statistics only exist for distributions of exponential families, Tishby relaxed this optimization problem by first, allowing the map to be stochastic, defined as an encoder $P(T\vert X)$, and second, by allowing the map to capute \textit{as much as possible} of $I(X;Y)$, not necessarily all of it.
 This leads to the \textit{Information Bottleneck} tradeoff, which provides a computational framework for finding approximate minimal sufficient statistics, or, the optimal tradeoff between compression of $X$ and prediction of $Y$. In this sense, efficient representations are approximate minimal sufficient statistics.
 Define $t\in T$ as a compressed representation of $x\in X$, then the mapping $p(t\vert x)$ defines the representation of $x$. This Information Bottleneck tradeoff is formulated by the following optimization problem, carried independently for the distributions $p(t\vert x), p(t), p(y\vert t)$, with Markov chain $Y\rightarrow X \rightarrow T$,
 \begin{equation}
-\underset{p(t\vert x), p(t), p(y\vert t)}{\min} \{ I(X,T)-\beta I(T,Y) \}.
+\underset{p(t\vert x), p(t), p(y\vert t)}{\min} \{ I(X;T)-\beta I(T;Y) \}.
 \end{equation}
-The Lagrange multipler $\beta$ determines the level of relevant information $I(T,Y)$ captured by the representation $T$, which is directly related to the error in the label prediction from this representation. The implicit solution to this problem is given by three self-consistent equations:
+The Lagrange multipler $\beta$ determines the level of relevant information $I(T;Y)$ captured by the representation $T$, which is directly related to the error in the label prediction from this representation. The implicit solution to this problem is given by three self-consistent equations:
 \begin{equation}
 \begin{cases}
 \begin{array}{rl}
@@ -128,29 +159,38 @@ p(y\vert t) & =\int p(y\vert x)p(x\vert t)dx
 \end{equation}
 where $X_\beta(x)$ denotes the normalization function. These equations are satisfied along the \textit{information curve}, which is a monotonic concave line of optimal representations that separates achievable and unachievable regions in the information-plane. For smooth $p(X,Y)$, i.e. when $Y$ is not a completely deterministic function of $X$, the information curve is strictly concave with unique slope $beta^{-1}$, at every point. In these cases, $\beta$ determines a single point on the information curve with specified encoder $P_\beta(T\vert X)$ and decoder $P_\beta(Y\vert T)$.
 
-\section{Information Plane}
+\subsection*{Information Bottleneck Bound}
 
-Any representation $T$, defined as a (possibly stochastic) map of input variable $X$, is characterized by its joint distributions with $X$ and $Y$, or by its encoder and decoder distributions, $P(T\vert X)$ and $P(Y\vert T)$, respectively. Given $P(X,Y)$, $T$ is uniquely mapped to a point in the information plane with coordinates $(I(X,T),\,I(T,Y))$. Given a Markov chain $Y\rightarrow X \rightarrow T_1 \rightarrow \ldots \rightarrow T_k \rightarrow \hat{Y}$ with a set of representations $\{T_i : i=1,\ldots,k\}$ and predicted output $\hat{Y}$, then $T_i$ are mapped to $K$ monotonic connected points in the plane. This unique \textit{information path} satisfies the DPI chains:
+
+
+
+
+\section{Deep Neural Networks}
+
+\subsection*{DNN As Markov Chains}
+
+
+% https://arxiv.org/abs/1703.00810
+% https://www.youtube.com/watch?v=bLqJHjXihK8
+
+\subsection*{Information Plane Theorem}
+
+Any representation $T$, defined as a (possibly stochastic) map of input variable $X$, is characterized by its joint distributions with $X$ and $Y$, or by its encoder and decoder distributions, $P(T\vert X)$ and $P(Y\vert T)$, respectively. Given $P(X,Y)$, $T$ is uniquely mapped to a point in the information plane with coordinates $(I(X;T),\,I(T;Y))$. Given a Markov chain $Y\rightarrow X \rightarrow T_1 \rightarrow \ldots \rightarrow T_k \rightarrow \hat{Y}$ with a chain of representations $\{T_i : i=1,\ldots,k\}$ and predicted output $\hat{Y}$, then $\{T_i\}$ are mapped to $K$ monotonic connected points in the plane. This unique \textit{information path} satisfies the DPI chains:
 \begin{gather}
-I(X,Y) \geq I(T_1,Y) \geq T(T2,Y) \geq \ldots \geq I(T_k, Y) \geq I(\hat{Y}, Y),\\
-H(X) \geq I(X,T_1) \geq I(X,T_2) \geq \ldots \geq I(X,T_k) \geq I(X,\hat{Y}).
+I(X;Y) \geq I(T_1;Y) \geq T(T2,Y) \geq \ldots \geq I(T_k; Y) \geq I(\hat{Y}; Y),\\
+H(X) \geq I(X;T_1) \geq I(X;T_2) \geq \ldots \geq I(X;T_k) \geq I(X;\hat{Y}).
 \end{gather}
 
 \myworries{figure here}
 
 
 
-\section{Deep Neural Networks}
-
-% https://arxiv.org/abs/1703.00810
-% https://www.youtube.com/watch?v=bLqJHjXihK8
-
-
-
 \myworries{youtube deep-NN here}
 \myworries{generalization bound here}
 
-\section{Variational Approximation}
+\section{Variational Bottleneck}
+
+\subsection*{Relation to $\beta$-VAE}
 
 % https://arxiv.org/pdf/1612.00410.pdf
 
