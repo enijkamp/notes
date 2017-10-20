@@ -9,6 +9,7 @@
 \usepackage{epstopdf}
 \usepackage{amssymb}
 \usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{mathtools}
 
 % layout
@@ -39,7 +40,7 @@
 \end{center}
 
 \begin{abstract}
-The Information Bottleneck, introduced by Naftali Tishby et al. in 1999, formalizes the notion of an information-theoretic ``optimal'' representation in terms of the fundamental tradeoff between having a concise representation (compression) and one with good predictive power (accuracy). We summarize connections to (1) minimal sufficient statistics, (2) the dynamics of stochastic gradient descent and topologies of deep neural networks, (3) generalization bounds in learning theory, and (4) the formulation of variational auto-encoders.
+The Information Bottleneck, introduced by Naftali Tishby et al. in 1999, formalizes the notion of an information-theoretic ``optimal'' representation in terms of the fundamental tradeoff between having a concise representation (compression) and one with good predictive power (accuracy). We summarize connections to (1) minimal sufficient statistics, (2) the dynamics of stochastic gradient descent, (3) topologies of deep neural networks, (4) generalization bounds in learning theory, and (5) the formulation of variational auto-encoders.
 \end{abstract}
 
 \section{Information Theory}
@@ -124,7 +125,7 @@ Z(X) = \underset{p(z \vert x)}{\arg\min}\, I(X; Z) -\beta I(Z;Y),\quad\beta>0.
 \end{equation}
 The Lagrange multipler $\beta$ determines the level of relevant information $I(Z;Y)$ captured by the representation $Z$, where large $\beta$ corresponds to high $I(Z;Y)$, and hence low compression.
 
-To obtain the Information bottleneck optimality equations, we solve the following optimization problem, carried independently for the distributions $p(z\vert x), p(z), p(y\vert z)$,
+To obtain the information bottleneck optimality equations, we solve the following optimization problem, carried independently for the distributions $p(z\vert x), p(z), p(y\vert z)$,
 \begin{equation}
 \underset{p(z\vert x), p(z), p(y\vert z)}{\min} I(X;Z) - \beta I(Z;Y), \quad\beta>0.
 \end{equation}
@@ -282,7 +283,7 @@ We can observe the phenomena in the behavior of the weight gradients $\nabla W_i
 	\caption{Mean $\rVert Mean(\nabla W_i)\rVert_2$ (filled line) and standard deviation $STD(\nabla W_i)$ (dotted line) of stochastic gradient $\nabla W_i$. The grey line ($\sim350$ epochs) marks the transition between the first phase, with large gradient means and small variance (drift, high gradient SNR), and the second phase, with large fluctuations and small means (diffusion, low SNR).}
 \end{figure}
 
-The diffusion phase mostly adds random noise to the weights, and they evolve like Wiener processes, under the constraint of the training error. Such diffusion processes can be described by the Fokker-Planck equation, whose stationary distribution maximizes the entropy of the weights distribution, under the training error constraint. This maximizes $H(X\vert Z_i)$, or minimizes $I(X;Z_i) = H(X) - H(X\vert Z_i)$, because the input entropy $H(X)$ remains constant. This entropy maximization by additive noise, also known as \emph{stochastic relaxation}, is constrained by the empirical error. By minimizing $I(X;Z_i)$ for each layer $i$, the diffusion phase leads to more compressed representations.
+While the increase of $I(Z;Y)$ in the ERM phase is expected from the cross-entropy loss minimization, the surprising compression phase requires an explanation. There was no explicit regularization that could simplify the representations. The diffusion phase mostly adds random noise to the weights, and they evolve like Wiener processes, under the constraint of the training error. Such diffusion processes can be described by the Fokker-Planck equation, whose stationary distribution maximizes the entropy of the weights distribution, under the training error constraint. This maximizes $H(X\vert Z_i)$, or minimizes $I(X;Z_i) = H(X) - H(X\vert Z_i)$, because the input entropy $H(X)$ remains constant. This entropy maximization by additive noise, also known as \emph{stochastic relaxation}, is constrained by the empirical error. By minimizing $I(X;Z_i)$ for each layer $i$, the diffusion phase leads to more compressed representations.
 
 \subsubsection*{From Stochastic Gradient-Descent to Ornstein-Uhlenbeck Process}
 
@@ -329,8 +330,7 @@ The solution of SDE (\ref{eq:sde}) is identified as a multidimensional Ornstein-
 
 \subsection*{Finding 2: Optimal Representation}
 
-\myworries{todo write}
-\myworries{describe how to compute optimal theoretical information bottleneck bound}
+\myworries{write}
 
 \subsection*{Finding 3: Benefits of the Hidden Layers}
 
@@ -351,7 +351,7 @@ with drift velocity  $\mu(X_t, t)$ and diffusion coefficient $D(X_t, t) = \sigma
 \frac{\partial}{\partial t} p(x, t) = -\frac{\partial}{\partial x}\left[\mu(x, t) p(x, t)\right] + \frac{\partial}{\partial x}D(x, t)\frac{\partial}{\partial x}p(x, t).
 \label{fokker}
 \end{equation}
-Then, according to the diffusion equation (\ref{fokker}), the relaxation time of layer $k$ is proportional to the exponential of this layer's compression amount $\Delta S_k:\Delta t_k\sim \exp(\Delta S_k)$. We can compute the later compression as $\Delta S_k = I(X;Z_k)-I(X;Z_{k-1})$. Because $\exp(\sum_k \Delta S_k) \geq \sum_k \exp(\Delta S_k)$, we would expect an \emph{exponential decrease in the training epochs} with increased number of hidden layers $k$.
+Then, according to the diffusion equation (\ref{fokker}), the relaxation time of layer $k$ is proportional to the exponential of this layer's compression amount $\Delta S_k:\Delta t_k\sim \exp(\Delta S_k)$. We can compute the layer compression as $\Delta S_k = I(X;Z_k)-I(X;Z_{k-1})$. Because $\exp(\sum_k \Delta S_k) \geq \sum_k \exp(\Delta S_k)$, we would expect an \emph{exponential decrease in the training epochs} with increasing number of hidden layers $k$.
 
 \subsection*{Finding 4: Benefit of Sample Size}
 
@@ -402,22 +402,54 @@ When $X$ is large, the size of $X$ is approximately $2^{H(X)}$. Each cell in the
 
 \section{Variational Bottleneck}
 
+\subsection*{Variational Formulation}
+
+\myworries{write}
+
 \subsection*{From Information Bottleneck to Variational Autoencoder}
 
+The information bottleneck objective is finding the statistic $Z(X)$ that is sufficient $I(X;Y) = I(Z;Y)$ with minimal $I(X;Z)$:
+\begin{align}
+\min &\quad I(X; Z)\\
+s.t. &\quad I(Z;Y)=I(X;Y).
+\end{align}
+We relax the formulation into the information bottleneck lagrangian:
+\begin{equation}
+\mathcal{L} =  I(X; Z) -\beta I(Z;Y),\quad\beta>0.
+\label{eq:ib_lag}
+\end{equation}
+Let $P_\theta(Z\vert X)$ and $P_\theta(Y\vert Z)$ denote variational approximations parameterized by $\theta$. We can rewrite the two terms of (\ref{eq:ib_lag}) as:
+\begin{align}
+I(Z;Y) &\simeq \E_{x,y\sim P(X,Y)} \left[ \E_{z\sim P_\theta(Z\vert X)}[-\log p_\theta(y\vert z)] \right],\\
+I(X; Z) &= \E_{x\sim P(X)}\left[ D_{KL}(p_\theta(z\vert x) \rVert p_\theta(z)) \right].
+\end{align}
+Given training set $\{(x_i,y_i):i=1\ldots,N\}\sim P(X,Y)$, we approximate (\ref{eq:ib_lag}) empirically as
+\begin{equation}
+\mathcal{L}(\theta) = \frac{1}{N}\sum_{i=1}^N \E_{z\sim p_\theta(Z\vert X=x_i)}[-\log p_\theta(y_i\vert z)] + \beta D_{KL}(p_\theta(z\vert x_i) \rVert p_\theta(z)).
+\label{eq:ib_approx}
+\end{equation}
+In an unsupervised regime, the task is reconstruction $y=x$ and (\ref{eq:ib_approx}) reduces to:
+\begin{equation}
+\mathcal{L}(\theta) = \frac{1}{N}\sum_{i=1}^N \E_{z\sim p_\theta(Z\vert X=x_i)}[-\log p_\theta(x_i\vert z)] + \beta D_{KL}(p_\theta(z\vert x_i) \rVert p_\theta(z)).
+\label{eq:ib_unsup}
+\end{equation}
+In fact, for $\beta=1$ we obtain the objective of the variational auto-encoder (VAE). For arbitrary $\beta$, this is precisely the objective formulation the $\beta$-VAE .
+
+\begin{proof}
+\myworries{rewrite}
 Consider the information bottleneck objective in an unsupervised setting:
 \begin{equation}
 \max I(Z;X) - \beta I(Z;i).
 \label{eq:ib_unsuper}
 \end{equation}
-\myworries{match previous notation}
 Then, bound the first term
 \begin{align}
 I(Z;X) 
-&= \int dx\,dz\,p(x,z) \log p(x|z)/p(x) \\
-&= H(x) + \int dx\,dz\,p(x,z) \log p(x|z)  \\
-&= H(x) + \int dz\,p(z) \int dx p(x|z) \log p(x|z)  \\
+&= \iint dx\,dz\,p(x,z) \log p(x|z)/p(x) \\
+&= H(x) + \iint dx\,dz\,p(x,z) \log p(x|z)  \\
+&= H(x) + \int dz\,p(z) \int dx\,p(x|z) \log p(x|z)  \\
 &\geq \int dz\,p(z) \int dx\,p(x|z) \log q(x|z) \label{eq:kl_pos} \\
-&= \int dx\,dz\,p(x,z) \log q(x|z)  \\
+&= \iint dx\,dz\,p(x,z) \log q(x|z)  \\
 &= \int dx\,p(x) \int dz\,p(z|x) \log q(x|z).
 \end{align}
 where in (\ref{eq:kl_pos}) we dropped $H(X)$ and used the non-negativity of the Kullback-Leibler divergence $D_{KL}(p(x\vert z)\rVert q(x\vert z)) \geq 0$ to substitute intractable $p(x\vert z)$ by variational decoder $q(x\vert z)$.
@@ -438,6 +470,6 @@ When applying both bounds to (\ref{eq:ib_unsuper}) the objective takes the form
 \begin{equation}
 I(Z;X) - \beta I(Z;i) \leq \int dx\,p(x)\int dz\, p(z\vert x) \log q(x\vert z) - \beta \frac{1}{N} \sum_i D_{KL}(p(Z\vert x_i)\rVert r(Z)),
 \end{equation}
-which is equivalent to the objective of a variational autoencoder (VAE), except the second KL divergence having an arbitrary weight $\beta$. In fact, this precise formulation is known as the $\beta$-VAE.
+\end{proof}
 
 \end{document}
