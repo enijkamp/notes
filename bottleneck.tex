@@ -92,7 +92,7 @@ Let random variable $X$ denote an input, $Z$ a representation of $X$, and $Y$ ob
 \begin{enumerate}
 	\item $Z$ is a \emph{representation} of $X$, that is, $Z$ only depends on $X$, or $Y\rightarrow X \rightarrow Z$.
 	\item $Z$ is \emph{sufficient} to infer $Y$, that is $I(X;Y) = I(Z;Y)$, or $Y\rightarrow Z \rightarrow X$.
-	\item $Z$ has \emph{minimal} mutual information $I(X;Z)$ is among all $Z$ satisfying (1-2).
+	\item $Z$ has \emph{minimal} mutual information $I(X;Z)$ among all $Z$ satisfying (1-2).
 	\item $Z$ is \emph{invariant} to the effect of noise $\epsilon$ on $X$, that is $I(Z;\epsilon)=0$ for any $\epsilon$.
 	\item $Z$ is \emph{disentangled}, that is the components $\{Z_i\}$ are maximal independent.
 \end{enumerate}
@@ -282,7 +282,7 @@ We can observe the phenomena in the behavior of the weight gradients $\nabla W_i
 	\caption{Mean $\rVert Mean(\nabla W_i)\rVert_2$ (filled line) and standard deviation $STD(\nabla W_i)$ (dotted line) of stochastic gradient $\nabla W_i$. The grey line ($\sim350$ epochs) marks the transition between the first phase, with large gradient means and small variance (drift, high gradient SNR), and the second phase, with large fluctuations and small means (diffusion, low SNR).}
 \end{figure}
 
-The diffusion phase mostly adds random noise to the weights, and they evolve like Wiener processes, under the constraint of the training error. Such diffusion processes can be described by the Focker-Planck equation, whose stationary distribution maximizes the entropy of the weights distribution, under the training error constraint. This maximizes $H(X\vert Z_i)$, or minimizes $I(X;Z_i) = H(X) - H(X\vert Z_i)$, because the input entropy $H(X)$ remains constant. This entropy maximization by additive noise, also known as \emph{stochastic relaxation}, is contrained by the empirical error. By minimizing $I(X;Z_i)$ for each layer $i$, the diffusion phase leads to more compressed representations.
+The diffusion phase mostly adds random noise to the weights, and they evolve like Wiener processes, under the constraint of the training error. Such diffusion processes can be described by the Fokker-Planck equation, whose stationary distribution maximizes the entropy of the weights distribution, under the training error constraint. This maximizes $H(X\vert Z_i)$, or minimizes $I(X;Z_i) = H(X) - H(X\vert Z_i)$, because the input entropy $H(X)$ remains constant. This entropy maximization by additive noise, also known as \emph{stochastic relaxation}, is constrained by the empirical error. By minimizing $I(X;Z_i)$ for each layer $i$, the diffusion phase leads to more compressed representations.
 
 \subsubsection*{From Stochastic Gradient-Descent to Ornstein-Uhlenbeck Process}
 
