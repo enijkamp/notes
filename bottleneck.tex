@@ -140,37 +140,6 @@ p(y\vert z) & =\int p(y\vert x)p(x\vert z)dx,
 \end{equation}
 where $Z_\beta(x)$ denotes the normalization function. These equations are satisfied along the \emph{information curve}, which is a monotonic concave line of optimal representations that separates achievable and unachievable regions in the information-plane. For smooth $P(X,Y)$, i.e. when $Y$ is not a completely deterministic function of $X$, the information curve is strictly concave with unique slope $\beta^{-1}$, at every point.  In these cases, $\beta$ determines a single point on the information curve with specified encoder $P_\beta(Z\vert X)$ and decoder $P_\beta(Y\vert Z)$.
 
-%Our goal is to learn an encoding $Z$ that is maximally information about output $Y$. That is, we want to maximize mutual information $I(Z;Y)$. However, the trivial identity $(Z=X)$ is always maximal informative. Naturally, we constrain the mutual information between $I(X;Z)$ encoding $Z$ and input $X$ by the information constraint $I_c$. Then, our objective is
-%\begin{align}
-%max & \quad I(Z;Y) \label{eq:max}\\
-%s.t. & \quad I(X;Z) \leq I_c.
-%\end{align}
-%Equivalently, we introduce a Lagrange multiplier $\beta$ and write the objective as:
-%\begin{equation}
-%\mathcal{L} = I(Z;Y) - \beta I(Z;X).
-%\label{eq:IB}
-%\end{equation}
-%\myworries{notation doesn't match, unify, rewrite to match conditions above}
-%
-%Here, our goal is to learn an encoding $Z$ that is maximally \textit{expressive} about $Y$ while being maximally \textit{compressive} about $X$. Then, $\beta\geq 0$ controls the tradeoff between informativeness and compression where large $\beta$ corresponds to highly compressed representations. This approach is known as the Information Bottleneck (IB). Intuitively, the first term in (\ref{eq:IB}) encourages $T$ to be ``predictive'' of $Y$; the second term encourages $T$ to ``forget'' $X$. Essentially, it forces $T$ to act like a minimal sufficient statistic of $X$ for predicting $Y$.
-%
-%The IB is appealing, since it defines a ``optimal'' representation in terms of the fundamental tradeoff between having a concise representation and one with good predictive power. The main drawback is that computing the mutual information is, in general, computationally challenging since (\ref{eq:p_y_z}) is intractable.
-%
-%Inspecting the objective reveals the \emph{stochastic encoder} $p(Z\vert X)$: The joint $p(X,Y,Z)$ under Markov chain $Y\rightarrow X \rightarrow Z$ factorizes as:
-%\begin{equation}
-%p(X, Y, T) = p(T\vert X,Y)p(Y\vert X)p(X) = p(T\vert X)p(Y\vert X)p(X).
-%\end{equation}
-%Then the mutual information (\ref{eq:max}) is
-%\begin{equation}
-%I(Z;Y) = \iint dy\, dz\, p(t,y) \log \frac{p(z,y)}{p(z)p(y)} = \iint dy\, dz\,  p(y,z) \log \frac{p(y\vert z)}{p(y)}
-%\label{eq:I_Z_Y}
-%\end{equation}
-%where  $p(y\vert z)$ is fully defined by stochastic encoder $p(Z\vert X)$ and the Markov chain as
-%\begin{equation}
-%p(y\vert t) = \int dx\, p(x,y\vert t)  = \int dx\, p(y \vert x) p(x \vert t)  = \int dx\, \frac{p(y \vert x)p(z \vert x) p(x)}{p(t)}.
-%\label{eq:p_y_z}
-%\end{equation}
-
 \subsection*{Information Bottleneck Bound}
 
 \myworries{write}
