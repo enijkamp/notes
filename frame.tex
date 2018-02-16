@@ -79,7 +79,7 @@ p(\I;\lambda)=\frac{1}{Z(\lambda)}\exp\left[ \sum_{k=1}^K \sum_{x\in\D}\lambda_k
 \end{equation}
 where $\lambda_k()$ is a non-linear potential function to be estimated from the training data and $Z(\lambda)$ is the intractable partition function. The energy function of (\ref{frame}) is 
 \begin{equation}
-\En(\I;\lambda)=-\sum_{k=1}^K \sum_{x\in\D}\lambda_k([F_k*\I](x))
+\En(\I;\lambda)=-\sum_{k=1}^K \sum_{x\in\D}\lambda_k([F_k*\I](x)).
 \end{equation}
 Note, (\ref{frame}) is stationary because the function $\lambda_k()$ does not depend on $x$.
 The \textit{non-stationary} FRAME model for object patterns is of the form
@@ -121,7 +121,7 @@ where the scoring function $f_w : \I \rightarrow \mathcal{R}$ is defined by a co
 \end{equation}
 The model $p(\I;w)$ can be understood as exponential tilting of $q(\I)$. In the trivial case of $f(\I;w)=w\I$, the effect of exponential tilting on $q(\I) \sim \mathcal{N}(\mu,\sigma^2)$ reduces to mean shifting $p(\I;w) \sim \mathcal{N}(\mu+w\sigma^2,\sigma^2)$. If $f(\I;w)$ is a convolutional neural network with piecewise linear rectification (ReLU), then $f(\I;w)$ is piecewise linear in $\I$ and $p(\I;w)$ is a piecewise mean shifted truncated Gaussian. The local energy minima of (\ref{deepenergy}) satisfy a Hopfield auto-encoder
 \begin{equation}
-\frac{\I}{\sigma^2} = \frac{\partial f(\I;w)}{\partial I}.
+\frac{\I}{\sigma^2} = \frac{\partial f(\I;w)}{\partial \I}.
 \end{equation}
 
 \section{Maximum Likelihood}
