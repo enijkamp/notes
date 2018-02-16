@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper, margin=2in]{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{epstopdf}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{filecontents}
+
+\setlength\parindent{0pt}
+
+\begin{filecontents}{\jobname.bib}
+@article{bilge11,
+	Author = {Sayim, Bilge and Cavanagh, Patrick},
+	Journal = {Frontiers in Human Neuroscience},
+	Pages = {118},
+	Title = {What Line Drawings Reveal About the Visual Brain},
+	Volume = {5},
+	Year = {2011},
+	URL = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3203412"
+}
+@misc{gardening,
+	author = {Virginia Hughes},
+	title = {Microglia: The constant gardeners},
+	URL = "https://www.nature.com/news/microglia-the-constant-gardeners-1.10732"
+}
+@article{Shimojo12340,
+	author = {Shimojo, Shinsuke and Paradiso, Michael and Fujita, Ichiro},
+	title = {What visual perception tells us about mind and brain},
+	volume = {98},
+	number = {22},
+	pages = {12340--12341},
+	year = {2001},
+	issn = {0027-8424},
+	URL = "http://www.pnas.org/content/98/22/12340",
+	journal = {Proceedings of the National Academy of Sciences}
+}
+@article{uniformity,
+	author = {Marte Otten and Yair Pinto and Chris L. E. Paffen and Anil K. Seth and Ryota Kanai},
+	title ={The Uniformity Illusion: Central Stimuli Can Determine Peripheral Perception},
+	journal = {Psychological Science},
+	volume = {28},
+	number = {1},
+	pages = {56-68},
+	year = {2017},
+	doi = {10.1177/0956797616672270},
+	note ={PMID: 28078975},
+	URL = "https://doi.org/10.1177/0956797616672270"
+}
+@misc{VisualShapeandObjectPerception,
+	author = "Anitha Pasupathy and Yasmine El-Shamayleh and Dina V. Popovkina",
+	title = "Visual Shape and Object Perception",
+	publisher = "Interactive Factory",
+	URL = "http://neuroscience.oxfordre.com/view/10.1093/acrefore/9780190264086.001.0001/acrefore-9780190264086-e-75"
+}
+\end{filecontents}
+
+\begin{document}
+
+\begin{center}
+{\LARGE On Visual Perception in Neuroscience} 
+\end{center}
+
+\subsection*{From Retina to Inferotemporal Cortex}
+
+``What Line Drawings Reveal About the Visual Brain" \cite{bilge11}:
+\begin{itemize}
+	\item Line drawings have only a sparse subset of scene contours.
+	\item Lines representing object contours as in depth sketches cause similar neural activations to other object representations.
+	\item Lines representing edges which arise from accidental illumination edges at the borders of shadows cause confusion.
+	\item Receptive field which recovers edges appears to work equally well for lines and triggers a similar neural response.
+	\item How does perception discriminate between edges representing object contours and shadow borders?
+	\item Which lines carry information to encode an object?
+\end{itemize}
+
+``What visual perception tells us about mind and brain" \cite{Shimojo12340}:
+\begin{itemize}
+	\item How can our unitary visual perception be based on neural activity spread across distinct streams of processing in multiple brain areas?
+	\item The primary goal of perception is to recover the features of external objects, a process termed unconscious inference by von Helmholtz. What we see is actually more than what is imaged on the retina. Thus perception is inevitably an ambiguity-solving process. The perceptual system generally reaches the most plausible global interpretation of the retinal input by integrating local cues.
+	\item Both lightness and depth perception differ from the sensory input of the retinal stimuli.
+	\item Responses of neurons in the retina and visual thalamus depend on light level but they do not correlate with perceived lightness. Only in V1 were cells found that had responses correlated with perceived lightness.
+	\item Early visual processing such as neurons of the retina and visual thalamus focus on the extraction of object contours, secondary processing stages are involved with the computation of lightness and later processing assigns color to objects.
+	\item Distance perception does not only rely on the interpretation of binocular disparity. The inferior temporal cortex (IT) represents the final stage of the visual pathway crucial for object recognition. Neurons in IT respond to shape, color, or texture. Recent studies show that many IT neurons also convey information on disparity. The pathway from V1 to IT transforms information about binocular disparity that is based on the optics of the eye into a perceptually relevant representation of information about surface structure.
+\end{itemize}
+
+``Visual Shape and Object Perception" \cite{VisualShapeandObjectPerception}:
+\begin{itemize}
+	\item Blah.
+\end{itemize}
+
+``The Uniformity Illusion" \cite{uniformity}:
+\begin{itemize}
+	\item Vision in the fovea, the center of the visual field, is more accurate and detailed than vision in the periphery.
+	\item Uniformity illusion is the result of a reconstruction of sparse visual information (from the periphery) based on more readily available detailed visual information (from the fovea), which gives rise to a rich, but illusory, experience of peripheral vision.
+\end{itemize}
+
+\subsection*{Sparsity}
+
+``Microglia: The constant gardeners" \cite{gardening}:
+\begin{itemize}
+	\item Neurons only account for $10\%$ of the cells in the brain.
+	\item Microglia may cause pruning by triming away weak connections, or synapses, between neurons.
+	\item May play a role in synapse remodelling and plasticity.
+	\item Visual cortex is a highly plastic region in that we begin life with a large number of synapses, and then the ones that are not activated by light input from the eyes are gradually pruned away. 
+	\item Perhaps there is close signalling going on between neurons and microglia setting an ``eat me" marker.
+\end{itemize}
+
+\bibliographystyle{plainurl}
+\bibliography{\jobname}
+
+\end{document}

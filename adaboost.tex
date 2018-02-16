@@ -1,0 +1,97 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper, margin=1.7in]{geometry}
+
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\begin{document}
+\begin{center}
+{\LARGE On AdaBoost} 
+\end{center}
+
+AdaBoost is a committee machine, which consists of a set of weak classifiers $h_t(x_i)\in\{+,-\},\,t=1,\ldots,T$ given a training set $\{(x_i,y_i), i=1,\ldots,n\}$. The final strong classifier is a perceptron based on the weak classifiers,
+\begin{equation}
+\hat{y}_i = sign\left( \sum_{t=1}^T \alpha_t h_t(x_i) \right),
+\end{equation}
+where $\alpha_t$ can be interpreted as the weight of the vote of weak classifier $t$. The loss is in the exponential form:
+\begin{equation}
+\ell(\alpha) = \sum_{i=1}^n \exp \left(-y_i \sum_{t=1}^T \alpha_th_t(x_i) \right).
+\end{equation}
+When training the strong classifier, we sequentially add members to the committee. Suppose the current committee has $m$ classifiers, and we want to add a new member $h_{new}$. After adding a new member, the loss function becomes
+\begin{equation}
+\ell(\alpha_{new}, h_{new}) = \sum_{i=1}^n \exp\left( -y_i \sum_{t=1}^m \alpha_th_t(x_i)+\alpha_{new}h_{new}(x_i) \right),
+\end{equation}
+where we assume the current members and their weights of votes are fixed. Take derivative
+\begin{equation}
+\frac{\partial\ell}{\partial\alpha_{new}} = \sum_{i=1}^n\exp\left( -y_i(\sum_{t=1}^m \alpha_th_t(x_i)+\alpha_{new}h_{new}(x_i)) \right) \cdot (-y_ih_{new}(x_i)).
+\end{equation}
+
+When choosing \textit{\textbf{a new member}}, consider the current committee without adding a new member, $\alpha_{new}=0$, then the above gradient can be written as
+\begin{align}
+\frac{\partial\ell}{\partial\alpha_{new}} \bigg\rvert_{\alpha_{new}=0}
+&= \sum_{i=1}^n\exp\left( -y_i(\sum_{t=1}^m \alpha_th_t(x_i)) \right) \cdot (-y_ih_{new}(x_i))\\
+& = -\sum_{i=1}^n w_iy_ih_{new}(x_i)
+\end{align}
+where
+\begin{equation}
+w_i = \exp\left( -y_i \sum_{t=1}^m \alpha_th_t(x_i) \right).
+\end{equation}
+Then normalize $w_i \leftarrow w_i / \sum_{i=1}^n w_i$ to make it a distribution. Observe, this distribution focuses on those examples that are not well classified by the current committee. Thus, we want to choose a weak classifier $h_{new}$ by maximizing $\sum_{i=1}^n w_iy_ih_{new}(x_i)$
+\begin{equation}
+h_{new} = \underset{h_{new}}{\arg\max} \sum_{i=1}^n w_iy_ih_{new}(x_i)
+\end{equation}
+ for the steepest drop in loss. Note, this implies that we want to choose the new weak classifier based on current distribution of the data $(x_i,y_i, w_i)$ where the weights $w_i$ keep changing. 
+
+To \textit{\textbf{determine the voting weight}} $\alpha_{new}$, we set the derivative to 0,
+\begin{gather}
+\frac{\partial\ell}{\partial\alpha_{new}} = 0,\\
+\sum_{i=1}^n w_i\exp(-y_i\alpha_{new}h_{new}(x_i))\cdot y_i h_{new}(x_i) = 0,\\
+\sum_{i\in correct} w_i\exp(-\alpha_{new}) = \sum_{i\in wrong} w_i\exp(\alpha_{new}),\label{eq:correct}\\
+\sum_{i\in correct} w_i = \sum_{i\in wrong} w_i \exp(2\alpha_{new}),\\
+\alpha_{new} = \frac{1}{2}\log\left( \frac{\sum_{i\in correct} w_i }{\sum_{i\in wrong} w_i} \right).
+\end{gather}
+Note, in (\ref{eq:correct}) we used the fact that if $i\in correct$, then $y_ih_{new}(x_i)=1$. If we define the error rate as
+\begin{equation}
+\epsilon = \frac{\sum_{i\in wrong}w_i}{\sum_i w_i},
+\end{equation}
+then $\alpha_{new}$ is
+\begin{equation}
+\alpha_{new} = \frac{1}{2} \log \frac{1-\epsilon}{\epsilon}.
+\end{equation}
+Finally, we assemble the derived steps in Algorithm \ref{code:1}.
+\begin{algorithm}[h]
+	\caption{AdaBoost learning}
+	\label{code:1}
+	{
+		\textbf{Input:} \\
+		- Samples $\{x_i : i=1,\ldots,n\}$,\\
+		- Desired outputs $\{y_i \in \{-1,+1\} : i=1,\ldots,n\}$,\\
+		- Weak learners $H=\{ h : x \rightarrow \{ -1,+1 \} \}$,\\
+		- Steps $T$.\\
+		
+		\textbf{Output:} \\
+		- Ensemble $\{h_t : t = 1,\ldots,T\}$,\\
+		- Voting weights $\{\alpha_t : t = 1,\ldots,T\}$.\\
+		
+		\textbf{Steps:}
+		\begin{algorithmic}[1]
+			\STATE Let $\{w_{1,i} =\frac{1}{n} : i=1,\ldots,n\}$.
+			\FOR{$t$ in $1,\ldots,T$}
+				\STATE Compute weighted error: \[\epsilon_t(h) = \sum_{i=1}^n w_{t,i}1(h(x_i) \neq y_i) \,\,\,\forall h\in H.\]
+				\STATE Choose weak learner: \[h_t = \underset{h\in H}{\arg\min}\, \epsilon_t(h).\]
+				\STATE Assign voting weight: \[\alpha_{t} = \frac{1}{2} \log \frac{1-\epsilon_t(h_t)}{\epsilon_t(h_t)}.\]
+				\STATE Update weights: \[ w_{i,t+1} = w_{i,t} \exp\left(-y_i \alpha_t h_t(x_i) \right) \,\,\,\forall i\in1,\ldots,n.\]
+				\STATE Renormalize weights: \[ w_{i,t+1} = \frac{w_{i,t+1}}{\sum_{i=1}^n w_{i,t+1}}.  \]
+			\ENDFOR
+		\end{algorithmic}
+	}
+\end{algorithm}
+
+\end{document}

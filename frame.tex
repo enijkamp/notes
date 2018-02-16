@@ -1,0 +1,234 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper, margin=2in]{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{epstopdf}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{filecontents}
+\usepackage{natbib}
+
+\def\L{L}
+\def\D{\mathcal{D}}
+\def\En{\mathcal{E}}
+\def\I{X}
+
+\begin{filecontents}{\jobname.bib}
+@article{ZhuWM97,
+	author    = {Song Chun Zhu and
+		Ying Nian Wu and
+		David Mumford},
+	title     = {Minimax Entropy Principle and Its Application to Texture Modeling},
+	journal   = {Neural Computation},
+	volume    = {9},
+	number    = {8},
+	pages     = {1627--1660},
+	year      = {1997},
+	url       = {https://doi.org/10.1162/neco.1997.9.8.1627},
+	doi       = {10.1162/neco.1997.9.8.1627},
+	timestamp = {Sun, 28 May 2017 01:00:00 +0200},
+	biburl    = {http://dblp.org/rec/bib/journals/neco/ZhuWM97},
+	bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+@article{xie,
+	Author = {Xie, Jianwen and Hu, Wenze and Zhu, Song Chun and Wu, Ying Nian},
+	Date-Added = {2017-07-07 00:20:22 +0000},
+	Date-Modified = {2017-07-07 00:23:51 +0000},
+	Journal = {International Conference on Machine Learning},
+	Title = {A theory of generative convnet},
+	Year = {2016}
+}
+
+@article{Hinton,
+	author = {Hinton, Geoffrey E.},
+	title = {Training Products of Experts by Minimizing Contrastive Divergence},
+	journal = {Neural Comput.},
+	issue_date = {August 2002},
+	volume = {14},
+	number = {8},
+	month = aug,
+	year = {2002},
+	issn = {0899-7667},
+	pages = {1771--1800},
+	numpages = {30},
+	url = {http://dx.doi.org/10.1162/089976602760128018},
+	doi = {10.1162/089976602760128018},
+	acmid = {639730},
+	publisher = {MIT Press},
+	address = {Cambridge, MA, USA},
+} 
+\end{filecontents}
+
+\begin{document}
+	
+\title{On the DeepFRAME model}
+\author{Erik Nijkamp}
+\date{}
+\maketitle
+
+\begin{abstract}
+The FRAME (Filters, Random Fields and Maximum Entropy) model \citep{ZhuWM97} is a generative model for texture patterns. It is an energy-based model in the form of a Gibbs distribution (or Markov random field) where the energy function is the sum of non-linear potential functions of linear filter responses. We review the DeepFRAME  as a generalization where the energy function is defined by a convolutional neural network. The local energy minima satisfy a Hopfield auto-encoder. The model can be learned by an analysis-by-synthesis scheme in the form of contrastive divergence.
+\end{abstract}
+
+\section{FRAME}
+Let $\I(x)$ denote an image on the domain $\D$ where $x=(x_1,x_2)$. Let $\{F_k,k=1,\ldots,K\}$ denote a set of filters such as Gabor. Let $F_k*\I$ denote a convolution and $[F_k*\I](x)$ be the filter response at position $x$.
+The \textit{stationary} FRAME model for texture patterns is in the form of a Markov random field or Gibbs distribution
+\begin{equation}
+p(\I;\lambda)=\frac{1}{Z(\lambda)}\exp\left[ \sum_{k=1}^K \sum_{x\in\D}\lambda_k([F_k*\I](x)) \right],\label{frame}
+\end{equation}
+where $\lambda_k()$ is a non-linear potential function to be estimated from the training data and $Z(\lambda)$ is the intractable partition function. The energy function of (\ref{frame}) is 
+\begin{equation}
+\En(\I;\lambda)=-\sum_{k=1}^K \sum_{x\in\D}\lambda_k([F_k*\I](x))
+\end{equation}
+Note, (\ref{frame}) is stationary because the function $\lambda_k()$ does not depend on $x$.
+The \textit{non-stationary} FRAME model for object patterns is of the form
+\begin{equation}
+p(\I;\lambda)=\frac{1}{Z(\lambda)}\exp\left[ \sum_{k=1}^K \sum_{x\in\D}\lambda_{k,x}([F_k*\I](x)) \right]q(\I),\label{frame2}
+\end{equation}
+where the potential $\lambda_{k,x}()$ does depend on $x$ and $q(I)$ is a reference distribution such as Gaussian (or Uniform)
+\begin{equation}
+q(\I)=\frac{1}{(2\pi\sigma^2)^{|\D|/2}}\exp\left[ -\frac{1}{\sigma^2} || \I ||^2 \right].\label{prior}
+\end{equation}
+We may parameterize $\lambda_{k,x}(r)=w_{k,x}h(r)$ with rectified linear unit (ReLU) $h(r) = max(0,r)$ and estimate $w_{k,x}$. We can absorb $q(\I)$ into the energy function of (\ref{frame2})
+\begin{equation}
+\En(\I;\lambda)=-\sum_{k=1}^K \sum_{x\in\D}\lambda_k([F_k*\I](x))+\frac{1}{\sigma^2} || \I ||^2.
+\end{equation}
+
+The FRAME model can be justified by the maximum entropy principle. Let $f(\I)$ denote the true distribution from which we sample observations $\{I_m\}$. Let $w^*$ solve the maximum likelihood equation
+\begin{equation}
+E_w([F_k*\I](x)) = E_f([F_k*\I](x)), \forall k,x.\label{likeeq}
+\end{equation}
+Let $\Omega$ denote a set of distributions which share the statistics of $f$ as captured by $\{F_k\}$:
+\begin{equation}
+\Omega = \{p:E_p([F_k*\I](x)) = E_f([F_k*\I](x)), \forall k,x \}.
+\end{equation}
+Then it can be shown that $p(\I;w^*)$ among all $p\in\Omega$ minimally modifies the reference $q$ to match the statistics of $f$
+\begin{equation}
+p(\I;w^*) = \underset{p\in\Omega}{\arg\min}\,KL(p||q).
+\end{equation}
+If $q$ is uniform, then $p(\I;w^*)$ achieves maximum entropy among all $p\in\Omega$. If $q$ is Gaussian, then we can absorb $||I||^2$ into the energy function and consider the model as a uniform measure with $||I||^2$ as additional feature. The maximum entropy interpretation still holds.
+
+\section{DeepFRAME}
+The FRAME model uses a set of pre-defined filters $\{F_k\}$. Instead of relying on pre-defined filters, the DeepFRAME \citep{xie} model learns the linear filters and non-linear potentials.
+It is a deep energy-based convolutional model in the form of a Gibbs distribution
+\begin{equation}
+p(\I;w)=\frac{1}{Z(w)}\exp\left[ f(\I;w) \right]q(\I),\label{deepframe}
+\end{equation}
+where the scoring function $f_w : \I \rightarrow \mathcal{R}$ is defined by a convolutional neural network with weights $w$ and $q(\I)$ is the reference distribution such as Gaussian $q(\I) \propto \exp(-||I||^2/2\sigma^2)$. The partition function $Z(w) = \int \exp\left[ f(\I;w) \right]q(\I) d\I$ is intractable. The energy function is
+\begin{equation}
+\En(\I;w)=-f(\I;w) + \frac{1}{2\sigma^2}||\I ||^2.\label{deepenergy}
+\end{equation}
+The model $p(\I;w)$ can be understood as exponential tilting of $q(\I)$. In the trivial case of $f(\I;w)=w\I$, the effect of exponential tilting on $q(\I) \sim \mathcal{N}(\mu,\sigma^2)$ reduces to mean shifting $p(\I;w) \sim \mathcal{N}(\mu+w\sigma^2,\sigma^2)$. If $f(\I;w)$ is a convolutional neural network with piecewise linear rectification (ReLU), then $f(\I;w)$ is piecewise linear in $\I$ and $p(\I;w)$ is a piecewise mean shifted truncated Gaussian. The local energy minima of (\ref{deepenergy}) satisfy a Hopfield auto-encoder
+\begin{equation}
+\frac{\I}{\sigma^2} = \frac{\partial f(\I;w)}{\partial I}.
+\end{equation}
+
+\section{Maximum Likelihood}
+Suppose we observe training examples $\{\I_i, i=1,\ldots,n\}$ form an unknown distribution. We can estimate the weight parameters $w$ by maximizing the log-likelihood
+\begin{equation}
+\L(w) = \frac{1}{n} \sum_{i=1}^n \log p(\I_i;w) \label{like}.
+\end{equation}
+Since we want to maximize the likelihood $\L(w)$, we will derive the gradient by firstly writing down the partial derivative of (\ref{like})
+\begin{align}
+\frac{\partial\L(w)}{\partial w}
+&= \frac{1}{n} \sum_{i=1}^n \frac{\partial}{\partial w} \log \left( \frac{1}{Z(w)}\exp\left[ f(\I_i;w) \right]q(\I_i) \right) \\
+& \propto \frac{1}{n} \sum_{i=1}^n \frac{\partial}{\partial w} \left(f(\I_i;w) -\log Z(w)  + \frac{1}{2\sigma^2}||\I_i ||^2 \right) \\
+& \propto \frac{1}{n} \sum_{i=1}^n \frac{\partial}{\partial w} f(\I_i;w) - \frac{1}{n} \sum_{i=1}^n \frac{\partial}{\partial w} \log Z(w) \label{logZidentity} \\ 
+& = \frac{1}{n} \sum_{i=1}^n \frac{\partial}{\partial w} f(\I_i;w) - E_w(\frac{\partial}{\partial w} f(\I;w)). \label{gradientlike}
+\end{align}
+The key to the equality (\ref{logZidentity}) is the identity
+\begin{align}
+\frac{\partial\log Z(w)}{\partial w}
+&= \frac{1}{Z(w)}\frac{\partial Z(w)}{\partial w}\\
+&= \frac{1}{Z(w)}\frac{\partial}{\partial w}\int \exp(f(\I;w))d\I\\
+&= \frac{1}{Z(w)}\int \frac{\partial \exp(f(\I;w))}{\partial w} d\I\\
+&= \frac{1}{Z(w)}\int \exp(f(\I;w))\frac{\partial f(\I;w)}{\partial w}d\I\\
+&= \int p(\I;w) \frac{\partial f(\I;w)}{\partial w}d\I \label{integration} \\ 
+&= E_w(\frac{\partial}{\partial w} f(\I;w)). \label{logZ}
+\end{align}
+This integration in (\ref{integration}) is intractable. However, in the form of (\ref{logZ}), we can see that the expectation can be numerically approximated by drawing samples from the proposed distribution $p(\I;w)$. However, we can not sample from $p(\I;w)$ directly as we can not evaluate the partition function $Z(w)$. But we may use many cycles of Markov Chain Monte Carlo (MCMC) sampling to transform our data distribution (drawn from the target distribution) into the proposed distribution. We may perform MCMC sampling in the form of a Langevin dynamics (or Gibbs sampling), which itereates the following steps:
+\begin{align}
+\I_{\tau+1}
+&= \I_{\tau} - \frac{\delta^2}{2} \frac{\partial}{\partial\I} \En(\I_\tau;w) + \delta U_\tau \\
+&= \I_{\tau} - \frac{\delta^2}{2} \left[ \frac{\I_\tau}{\sigma^2} - \frac{\partial}{\partial \I} f(\I_\tau;w) \right] + \delta U_\tau.\label{langevin}
+\end{align}
+where $\tau$ indexes the time step, $\delta$ is the step size, and $U_\tau\sim\mathcal{N}(0,I)$ is Gaussian white noise. The Langevin dynamics can be understood as a stochastic Ornstein-Uhlenbeck process where the gradient term $\frac{\partial}{\partial \I} f(\I_\tau;w)$ is attracting the process towards low energy regions and the Wiener process $U_\tau$ injects randomness to overcome shallow modes.
+
+We may run $\tilde n$ parallel Markov chains of Langevin dynamics according to (\ref{langevin}) to obtain the synthesized examples $\{ \tilde\I_{i}, i=1,\ldots,\tilde n \}$. Then the Monte Carlo approximation of (\ref{gradientlike}) is
+\begin{align}
+\frac{\partial}{\partial w}\L(w) &= \frac{1}{n} \sum_{i=1}^n \frac{\partial}{\partial w} f(\I_i;w) - E_w(\frac{\partial}{\partial w} f(\I;w)) \\
+&\approx \frac{1}{n} \sum_{i=1}^n \frac{\partial}{\partial w} f(\I_i;w) - \frac{1}{\tilde n} \sum_{i=1}^{\tilde n} \frac{\partial}{\partial w} f(\tilde\I_i;w) \\
+&= \frac{\partial}{\partial w}\left[ \frac{1}{\tilde n}\sum_{i=1}^{\tilde n} \En(\tilde \I_i; w) - \frac{1}{n}\sum_{i=1}^{n} \En(\I_i; w)  \right].
+\end{align}
+We compute $w$ by stochastic gradient ascent to maximize $\L(w)$
+\begin{align}
+w_{\tau+1}
+&= w_{\tau} + \gamma \frac{\partial}{\partial w}\L(w) \\
+&\approx w_{\tau} + \gamma \left( \frac{1}{n} \sum_{i=1}^n \frac{\partial}{\partial w} f(\I_i;w) - \frac{1}{\tilde n} \sum_{i=1}^{\tilde n} \frac{\partial}{\partial w} f(\tilde\I_i;w) \right) \label{ascent}
+\end{align}
+where $\gamma$ is the step size.
+
+Both learning in (\ref{ascent}) and sampling in (\ref{langevin}) involve the gradients of $f(\I;w)$ with respect to $w$ and $\I$, respectively. The derivatives can be computed efficiently in the traditional backpropagation and both derivatives share most of the chain rule.
+
+\section{Contrastive Divergence}
+
+Consider a Gibbs distribution with parameters $w$ in the form of
+\begin{equation}
+p_w(\I)=\frac{1}{Z(w)}\exp\left[ f(\I;w) \right],\label{gibbs}
+\end{equation}
+where $Z(w)$ denotes the intractable partition function and $f(\I;w)$ is the energy function. Let $\{\I_i, i=1,\ldots,n\}$ denote a sample. Then the empirical data distribution is
+\begin{equation}
+p_0(\I)=\frac{1}{n}\sum_{i=1}^n \delta(\I-\I_i),\label{data}
+\end{equation}
+where $\delta()$ is the Dirac delta function. The log-likelihood is
+\begin{equation}
+\L(w) = \frac{1}{n} \sum_{i=1}^n \log p(\I_i;w) \label{like}.
+\end{equation}
+In maximum likelihood learning of parameters $w$ we perform gradient ascent
+\begin{equation}
+w_{\tau+1} = w_{\tau} + \gamma \frac{\partial}{\partial w}\L(w).
+\end{equation}
+As shown in (\ref{gradientlike}) the gradient of the log-likelihood is given by
+\begin{align}
+\frac{\partial\L(w)}{\partial w} 
+&= \frac{1}{n} \sum_{i=1}^n \frac{\partial}{\partial w} f(\I_i;w) - E_{p_w}(\frac{\partial}{\partial w} f(\I;w)) \\
+&= E_{p_0}(\frac{\partial}{\partial w} f(\I;w)) - E_{p_w}(\frac{\partial}{\partial w} f(\I;w)) \label{gradml} \\
+&\approx \frac{1}{n} \sum_{i=1}^n \frac{\partial}{\partial w} f(\I_i;w) - \frac{1}{\tilde n} \sum_{i=1}^{\tilde n} \frac{\partial}{\partial w} f(\tilde\I_i;w)\\
+&= E_{p_0}(\frac{\partial}{\partial w} f(\I;w)) - E_{p_n}(\frac{\partial}{\partial w} f(\I;w)). \label{gradcd} 
+\end{align}
+We transform $p_0$ into $p_n$ by starting a Markov chain from the data distribution $p_0$ and run the chain for $n$ number of steps. That is, $p_n = T^n p_0$ where $T$ is the Markov operator.
+
+The log-likelihood gradient (\ref{gradml}) performs traditional maximum likelihood (ML) learning, but it is intractable. To avoid this computational difficulty, Hinton proposed contrastive divergence (CD) \citep{Hinton} learning where the gradient (\ref{gradcd}) approximatively follows the gradient of a different function. CD does noisy gradient ascent (noise due to averaging over a finite number of samples) on an objective function which approximates the log-likelihood.
+
+Maximum likelihood learning minimizes the Kullback-Leibler divergence
+\begin{align}
+KL(p_0||p_w)
+&= \sum_X p_0(X) \log \frac{p_0(X)}{p_w(X)} \\
+&= \sum_X p_0(X) \log p_0(X) - \sum_X p_0(X) \log p_w(X) \\
+&= -H(p_0(X)) - \sum_X p_0(X) \log p_w(X) \\
+&\propto - \sum_X p_0(X) \log p_w(X) \\
+&= - \sum_X \left[\frac{1}{n}\sum_{i=1}^n \delta(\I-\I_i)\right] \log p_w(X) \\
+&= \frac{1}{n} \sum_{i=1}^n \log p(\I_i;w)
+= \L(w).
+\end{align}
+Contrastive divergence learning approximatively follows the gradient of two divergences
+\begin{equation}
+CD_n = KL(p_0||p_w) - KL(p_n||p_w).\label{CD}
+\end{equation}
+The first term minimizes divergence between $p_w$ and $p_0$ which increases the likelihood of the sample $\{\I_i, i=1,\ldots,n\}$ (by reducing the corresponding energy), while the second term maximizes the divergence between $p_n$ and $p_w$ which decreases the likelihood of MCMC samples generated by $p_w$.
+
+In practice, we can recover the gradient (\ref{gradcd}) by neglecting the third term
+\begin{align}
+\frac{\partial}{\partial w}CD_n
+&= \frac{\partial}{\partial w}\left[ KL(p_0||p_w) - KL(p_n||p_w) \right] \\
+&=  E_{p_0}(\frac{\partial}{\partial w} f(\I;w)) - E_{p_n}(\frac{\partial}{\partial w} f(\I;w)) \\
+&- \frac{\partial}{\partial w} p_n(X)\frac{\partial }{\partial p_n(X)} KL(p_n||p_w) \\
+&\approx  E_{p_0}(\frac{\partial}{\partial w} f(\I;w)) - E_{p_n}(\frac{\partial}{\partial w} f(\I;w)).
+\end{align}
+
+
+\bibliographystyle{plainnat}
+\bibliography{\jobname} 
+
+\end{document}
